@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { TransferLimits, VerificationLevel, SecuritySettings, TrustedDevice, Transaction, TransactionStatus, PushNotificationSettings, UserProfile } from '../types';
-import { CheckCircleIcon, PencilIcon, DevicePhoneMobileIcon, FingerprintIcon, LockClosedIcon, UserCircleIcon, NetworkIcon, IdentificationIcon, ComputerDesktopIcon, FaceIdIcon, CertificateIcon, ChartBarIcon, ShieldCheckIcon, TrendingUpIcon, EyeIcon, ExclamationTriangleIcon, CameraIcon, SpinnerIcon } from './Icons';
-import { ManageLimitsModal } from './ManageLimitsModal';
+import { AdvancedTransferLimits, LimitDetail, VerificationLevel, SecuritySettings, TrustedDevice, Transaction, TransactionStatus, PushNotificationSettings, UserProfile, Card } from '../types';
+import { CheckCircleIcon, PencilIcon, DevicePhoneMobileIcon, FingerprintIcon, LockClosedIcon, UserCircleIcon, NetworkIcon, IdentificationIcon, ComputerDesktopIcon, FaceIdIcon, CertificateIcon, ChartBarIcon, ShieldCheckIcon, TrendingUpIcon, EyeIcon, ExclamationTriangleIcon, CameraIcon, SpinnerIcon, ArrowsRightLeftIcon, BankIcon, GlobeAmericasIcon, ICreditUnionLogo, VisaIcon, MastercardIcon, ShoppingBagIcon } from './Icons';
 import { VerificationCenter } from './VerificationCenter';
 import { Setup2FAModal } from './Setup2FAModal';
 import { SetupBiometricsModal } from './SetupBiometricsModal';
 
 interface SettingsProps {
-  transferLimits: TransferLimits;
-  onUpdateLimits: (newLimits: TransferLimits) => void;
+  advancedTransferLimits: AdvancedTransferLimits;
+  onUpdateAdvancedLimits: (newLimits: AdvancedTransferLimits) => void;
+  cards: Card[];
+  onUpdateCardControls: (cardId: string, updatedControls: Partial<Card['controls']>) => void;
   verificationLevel: VerificationLevel;
   onVerificationComplete: (level: VerificationLevel) => void;
   securitySettings: SecuritySettings;
@@ -24,7 +25,6 @@ interface SettingsProps {
 }
 
 const KycFeatureCard: React.FC<{
-  // FIX: Changed icon type to React.ReactElement to ensure it's a cloneable element for React.cloneElement.
   icon: React.ReactElement<any>;
   title: string;
   description: string;
@@ -46,14 +46,15 @@ const KycFeatureCard: React.FC<{
             { rootMargin: '0px 0px -100px 0px' }
         );
 
-        if (cardRef.current) {
-            observer.observe(cardRef.current);
+        const currentCardRef = cardRef.current;
+
+        if (currentCardRef) {
+            observer.observe(currentCardRef);
         }
 
         return () => {
-            if (cardRef.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                observer.unobserve(cardRef.current);
+            if (currentCardRef) {
+                observer.unobserve(currentCardRef);
             }
         };
     }, []);
@@ -123,57 +124,107 @@ const SecurityScore: React.FC<{ score: number }> = ({ score }) => {
     );
 };
 
-const LimitProgress: React.FC<{
-    title: string;
-    usedAmount: number;
-    limitAmount: number;
-    usedCount: number;
-    limitCount: number;
-}> = ({ title, usedAmount, limitAmount, usedCount, limitCount }) => {
-    const amountPercentage = Math.min((usedAmount / limitAmount) * 100, 100);
-    const countPercentage = Math.min((usedCount / limitCount) * 100, 100);
-
-    const getBarColor = (percentage: number) => {
-        if (percentage > 90) return 'bg-red-500';
-        if (percentage > 75) return 'bg-yellow-500';
-        return 'bg-primary';
-    };
+const CardSecurityControls: React.FC<{ cards: Card[], onUpdateCardControls: (cardId: string, updatedControls: Partial<Card['controls']>) => void }> = ({ cards, onUpdateCardControls }) => {
+    
+    const ControlToggle: React.FC<{ label: string; enabled: boolean; onChange: (val: boolean) => void }> = ({ label, enabled, onChange }) => (
+        <div className="flex justify-between items-center py-2">
+            <span className="font-medium text-slate-700 text-sm">{label}</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={enabled} onChange={(e) => onChange(e.target.checked)} />
+                <div className="w-11 h-6 bg-slate-200 rounded-full peer shadow-inner peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-md peer-checked:bg-primary"></div>
+            </label>
+        </div>
+    );
 
     return (
-        <div className="py-4 first:pt-0 last:pb-0">
-            <h4 className="font-semibold text-slate-700 mb-3">{title}</h4>
-            <div className="space-y-3">
-                <div>
-                    <div className="flex justify-between text-sm mb-1">
-                        <span className="text-slate-600">Amount Used</span>
-                        <span className="font-mono text-slate-800 font-semibold">
-                            {usedAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} / {limitAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                        </span>
+        <div className="bg-slate-200 rounded-2xl shadow-digital">
+            <div className="p-6 border-b border-slate-300"><h2 className="text-xl font-bold text-slate-800">Card Security Controls</h2></div>
+            <div className="p-6 space-y-4">
+                {cards.map(card => (
+                    <div key={card.id} className="bg-slate-200 p-4 rounded-lg shadow-digital-inset">
+                        <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center space-x-3">
+                                {card.network === 'Visa' ? <VisaIcon className="w-10 h-auto"/> : <MastercardIcon className="w-10 h-auto"/>}
+                                <div>
+                                    <p className="font-bold text-slate-800">{card.cardType === 'DEBIT' ? 'Debit Card' : 'Credit Card'}</p>
+                                    <p className="text-sm text-slate-500 font-mono">•••• {card.lastFour}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="divide-y divide-slate-300">
+                            <ControlToggle label="Lock Card" enabled={card.controls.isFrozen} onChange={val => onUpdateCardControls(card.id, { isFrozen: val })} />
+                            <ControlToggle label="Online Purchases" enabled={card.controls.onlinePurchases} onChange={val => onUpdateCardControls(card.id, { onlinePurchases: val })} />
+                            <ControlToggle label="International Transactions" enabled={card.controls.internationalTransactions} onChange={val => onUpdateCardControls(card.id, { internationalTransactions: val })} />
+                        </div>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2.5 shadow-digital-inset">
-                        <div className={`${getBarColor(amountPercentage)} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${amountPercentage}%` }}></div>
-                    </div>
-                </div>
-                <div>
-                    <div className="flex justify-between text-sm mb-1">
-                        <span className="text-slate-600">Transactions Used</span>
-                        <span className="font-mono text-slate-800 font-semibold">
-                            {usedCount} / {limitCount}
-                        </span>
-                    </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2.5 shadow-digital-inset">
-                        <div className={`${getBarColor(countPercentage)} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${countPercentage}%` }}></div>
-                    </div>
-                </div>
+                ))}
             </div>
         </div>
     );
 };
 
+const AdvancedTransferLimitsDisplay: React.FC<{ limits: AdvancedTransferLimits; transactions: Transaction[] }> = ({ limits, transactions }) => {
+    
+    const LimitDetailDisplay: React.FC<{ label: string; value: number | 'Unlimited' }> = ({ label, value }) => (
+        <div className="flex justify-between text-sm py-1">
+            <span className="text-slate-500">{label}</span>
+            <span className="font-semibold text-slate-800 font-mono">
+                {typeof value === 'number' ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : value}
+            </span>
+        </div>
+    );
+    
+    const LimitCategory: React.FC<{ title: string; icon: React.ReactNode; limit: LimitDetail; used: { daily: number; monthly: number } }> = ({ title, icon, limit, used }) => {
+        const dailyProgress = limit.daily !== 'Unlimited' ? (used.daily / limit.daily) * 100 : 0;
+        const monthlyProgress = limit.monthly !== 'Unlimited' ? (used.monthly / limit.monthly) * 100 : 0;
+        
+        return (
+            <div className="bg-slate-200 p-4 rounded-lg shadow-digital-inset">
+                <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-200 shadow-digital text-primary">{icon}</div>
+                    <h4 className="font-bold text-slate-800">{title}</h4>
+                </div>
+                <div className="space-y-3">
+                    {limit.perTransaction && <LimitDetailDisplay label="Per Transaction" value={limit.perTransaction} />}
+                    <LimitDetailDisplay label="Daily Limit" value={limit.daily} />
+                    {limit.daily !== 'Unlimited' && (
+                        <div className="w-full bg-slate-300 rounded-full h-1.5 shadow-inner"><div className="bg-primary h-1.5 rounded-full" style={{ width: `${dailyProgress}%`}}></div></div>
+                    )}
+                    <LimitDetailDisplay label="Monthly Limit" value={limit.monthly} />
+                     {limit.monthly !== 'Unlimited' && (
+                        <div className="w-full bg-slate-300 rounded-full h-1.5 shadow-inner"><div className="bg-primary h-1.5 rounded-full" style={{ width: `${monthlyProgress}%`}}></div></div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+    
+    // Mock usage data for display purposes
+    const p2pUsage = { daily: 350, monthly: 1200 };
+    const achUsage = { daily: 5500, monthly: 27000 };
+    const wireUsage = { daily: 0, monthly: 50000 };
+
+    return (
+        <div className="bg-slate-200 rounded-2xl shadow-digital">
+            <div className="p-6 border-b border-slate-300 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-slate-800">Advanced Transfer Limits</h2>
+                <button onClick={() => alert('To request a limit increase, please contact customer support through the Support Center.')} className="text-sm font-semibold text-primary hover:underline">Request Increase</button>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <LimitCategory title="Peer-to-Peer (P2P)" icon={<ArrowsRightLeftIcon className="w-6 h-6"/>} limit={limits.p2p} used={p2pUsage} />
+                <LimitCategory title="ACH Bank Transfers" icon={<BankIcon className="w-6 h-6"/>} limit={limits.ach} used={achUsage} />
+                <LimitCategory title="Wire Transfers" icon={<GlobeAmericasIcon className="w-6 h-6"/>} limit={limits.wire} used={wireUsage} />
+                <LimitCategory title="Internal Transfers" icon={<ICreditUnionLogo />} limit={limits.internal} used={{daily: 0, monthly: 0}} />
+            </div>
+        </div>
+    );
+};
 
 export const Security: React.FC<SettingsProps> = ({ 
-    transferLimits, 
-    onUpdateLimits, 
+    advancedTransferLimits,
+    onUpdateAdvancedLimits,
+    cards,
+    onUpdateCardControls,
     verificationLevel, 
     onVerificationComplete,
     securitySettings,
@@ -187,7 +238,6 @@ export const Security: React.FC<SettingsProps> = ({
     userProfile,
     onUpdateProfilePicture,
 }) => {
-  const [isLimitsModalOpen, setIsLimitsModalOpen] = useState(false);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
   const [isBiometricsModalOpen, setIsBiometricsModalOpen] = useState(false);
@@ -210,30 +260,6 @@ export const Security: React.FC<SettingsProps> = ({
     return Math.round(score);
   }, [securitySettings, verificationLevel]);
 
-  const getUsageForPeriod = (transactions: Transaction[], days: number) => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    
-    const relevantTxs = transactions.filter(tx => {
-        const txDate = tx.statusTimestamps[TransactionStatus.SUBMITTED];
-        return txDate >= cutoff && tx.type === 'debit';
-    });
-
-    const totalAmount = relevantTxs.reduce((sum, tx) => sum + tx.sendAmount, 0);
-    const totalCount = relevantTxs.length;
-
-    return { amount: totalAmount, count: totalCount };
-  };
-
-  const dailyUsage = useMemo(() => getUsageForPeriod(transactions, 1), [transactions]);
-  const weeklyUsage = useMemo(() => getUsageForPeriod(transactions, 7), [transactions]);
-  const monthlyUsage = useMemo(() => getUsageForPeriod(transactions, 30), [transactions]);
-
-  const handleSaveLimits = (newLimits: TransferLimits) => {
-    onUpdateLimits(newLimits);
-    setIsLimitsModalOpen(false);
-  };
-  
   const handleVerificationModalClose = (level: VerificationLevel) => {
     onVerificationComplete(level);
     setIsVerificationModalOpen(false);
@@ -433,6 +459,10 @@ export const Security: React.FC<SettingsProps> = ({
                 })}
             </div>
         </div>
+        
+        <CardSecurityControls cards={cards} onUpdateCardControls={onUpdateCardControls} />
+
+        <AdvancedTransferLimitsDisplay limits={advancedTransferLimits} transactions={transactions} />
 
         <div className="bg-slate-200 rounded-2xl shadow-digital">
           <div className="p-6 border-b border-slate-300"><h2 className="text-xl font-bold text-slate-800">Push Notification Preferences</h2></div>
@@ -506,46 +536,7 @@ export const Security: React.FC<SettingsProps> = ({
           </div>
         </div>
 
-        <div className="bg-slate-200 rounded-2xl shadow-digital">
-          <div className="p-6 border-b border-slate-300 flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">Transfer Limits</h2>
-             <button onClick={() => setIsLimitsModalOpen(true)} className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-primary bg-slate-200 rounded-lg shadow-digital active:shadow-digital-inset transition-shadow">
-                <PencilIcon className="w-4 h-4" />
-                <span>Manage</span>
-              </button>
-          </div>
-          <div className="p-6 divide-y divide-slate-300">
-             <LimitProgress 
-                title="Daily Limit"
-                usedAmount={dailyUsage.amount}
-                limitAmount={transferLimits.daily.amount}
-                usedCount={dailyUsage.count}
-                limitCount={transferLimits.daily.count}
-            />
-            <LimitProgress 
-                title="Weekly Limit"
-                usedAmount={weeklyUsage.amount}
-                limitAmount={transferLimits.weekly.amount}
-                usedCount={weeklyUsage.count}
-                limitCount={transferLimits.weekly.count}
-            />
-            <LimitProgress 
-                title="Monthly Limit"
-                usedAmount={monthlyUsage.amount}
-                limitAmount={transferLimits.monthly.amount}
-                usedCount={monthlyUsage.count}
-                limitCount={transferLimits.monthly.count}
-            />
-          </div>
-        </div>
       </div>
-      {isLimitsModalOpen && (
-        <ManageLimitsModal 
-          limits={transferLimits}
-          onSave={handleSaveLimits}
-          onClose={() => setIsLimitsModalOpen(false)}
-        />
-      )}
       {isVerificationModalOpen && (
         <VerificationCenter 
             currentLevel={verificationLevel}

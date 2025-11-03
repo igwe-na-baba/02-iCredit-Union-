@@ -1,7 +1,7 @@
 // FIX: Import React to make React types like `ComponentType` available in this file.
 import React from 'react';
 
-export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire' | 'about' | 'contact';
+export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire' | 'about' | 'contact' | 'wallet' | 'ratings' | 'globalAid';
 
 export type BalanceDisplayMode = 'global' | 'domestic';
 
@@ -531,7 +531,7 @@ export interface AtmLocation {
   city: string;
   state: string;
   zip: string;
-// FIX: Changed 'ApexBank' to 'iCredit Union®' to match the value used in constants.ts, resolving the type error.
+  // FIX: Changed 'ApexBank' to 'iCredit Union®' to match the value used in constants.ts, resolving the type error.
   network: 'Allpoint' | 'Visa Plus' | 'Cirrus' | 'iCredit Union®';
   lat: number;
   lng: number;
@@ -567,4 +567,57 @@ export interface LeadershipProfile {
   title: string;
   imageUrl: string;
   bio: string;
+}
+
+// Digital Wallet
+export interface WalletDetails {
+  balance: number;
+  currency: 'USD';
+  cardLastFour: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  description: string;
+  amount: number;
+  date: Date;
+  type: 'debit' | 'credit'; // debit is money out, credit is money in
+}
+
+// Ratings & Reviews
+export interface CustomerReview {
+  id: string;
+  author: string;
+  location: string;
+  rating: number; // 1-5
+  comment: string;
+  date: Date;
+}
+
+export interface StaffProfile {
+  id: string;
+  name: string;
+  title: string;
+  imageUrl: string;
+  bio: string;
+  rating: number; // 1-5
+}
+
+// Global Aid
+export interface Cause {
+  id: string;
+  title: string;
+  shortDescription: string;
+  imageUrl: string;
+  details?: {
+    description: string;
+    impacts: string[];
+  };
+}
+
+export interface Donation {
+  id: string;
+  causeId: string;
+  amount: number;
+  date: Date;
 }

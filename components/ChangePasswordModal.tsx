@@ -14,7 +14,9 @@ const PasswordCriteriaList: React.FC<{ criteria: { [key: string]: boolean } }> =
         { label: 'At least 8 characters', met: criteria.minLength },
         { label: 'One uppercase letter', met: criteria.hasUppercase },
         { label: 'One lowercase letter', met: criteria.hasLowercase },
-        { label: 'One number', met: criteria.hasSpecialChar },
+        // FIX: Corrected the check to use `hasNumber` instead of the incorrect `hasSpecialChar` for the 'One number' criterion.
+        { label: 'One number', met: criteria.hasNumber },
+        { label: 'One special character', met: criteria.hasSpecialChar },
     ];
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs mt-2">

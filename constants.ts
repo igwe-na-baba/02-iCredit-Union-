@@ -1,4 +1,4 @@
-import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard, FaqItem, LeadershipProfile, View } from './types';
+import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard, FaqItem, LeadershipProfile, View, WalletDetails, WalletTransaction, CustomerReview, StaffProfile, Cause } from './types';
 
 export const ALL_COUNTRIES: Country[] = [
     { code: 'US', name: 'United States', currency: 'USD', symbol: '$' },
@@ -347,6 +347,32 @@ export const BANKS_BY_COUNTRY: { [countryCode: string]: { name: string; domain: 
     { name: 'Ecobank Ghana', domain: 'ecobank.com' },
     { name: 'GCB Bank', domain: 'gcbbank.com.gh' },
   ],
+};
+
+export const BANK_ACCOUNT_CONFIG: { [countryCode: string]: any } = {
+  US: {
+    field1: { name: 'routingNumber', label: 'Routing Number', placeholder: 'e.g., 110000000', maxLength: 9, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => /^\d{9}$/.test(v) ? null : 'Routing number must be exactly 9 digits.' },
+    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 123456789', maxLength: 17, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length > 5 ? null : 'Account number is too short.' },
+  },
+  GB: {
+    field1: { name: 'sortCode', label: 'Sort Code', placeholder: 'e.g., 20-30-40', maxLength: 8, format: (v: string) => v.replace(/\D/g, '').replace(/(\d{2})(?=\d)/g, '$1-').slice(0, 8), validate: (v: string) => v.replace(/-/g, '').length === 6 ? null : 'Sort code must be 6 digits (e.g., 20-30-40).' },
+    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 12345678', maxLength: 8, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length === 8 ? null : 'Must be 8 digits.' },
+  },
+  IN: {
+    field1: { name: 'ifsc', label: 'IFSC Code', placeholder: 'e.g., SBIN0000001', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v) ? null : 'Invalid IFSC code format.' },
+    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 12345678901', maxLength: 18, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length >= 9 ? null : 'Account number is too short.' },
+  },
+  NG: {
+    field1: { name: 'nuban', label: 'NUBAN Account Number', placeholder: 'e.g., 0123456789', maxLength: 10, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => /^\d{10}$/.test(v) ? null : 'NUBAN must be exactly 10 digits.' },
+  },
+  DE: {
+    field1: { name: 'iban', label: 'IBAN', placeholder: 'e.g., DE89 3704 0044 0532 0130 00', maxLength: 43, format: (v: string) => (v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().match(/.{1,4}/g) || []).join(' '), validate: (v: string) => v.replace(/\s/g, '').length === 22 ? null : 'Invalid IBAN format. Must be 22 characters for Germany.' },
+    field2: { name: 'swiftBic', label: 'BIC/SWIFT', placeholder: 'e.g., COBADEFFXXX', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v) ? null : 'Invalid BIC/SWIFT code.' },
+  },
+  default: {
+    field1: { name: 'iban', label: 'IBAN / Account Number', placeholder: 'Enter account number', maxLength: 34, format: (v: string) => v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), validate: (v: string) => v.length > 5 ? null : 'Account number is too short.' },
+    field2: { name: 'swiftBic', label: 'BIC/SWIFT (Optional)', placeholder: 'Enter BIC/SWIFT code', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => !v || /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v) ? null : 'Invalid BIC/SWIFT code.' },
+  }
 };
 
 export const INITIAL_RECIPIENTS: Recipient[] = [
@@ -753,7 +779,6 @@ export const INITIAL_TRAVEL_PLANS: TravelPlan[] = [
 ];
 
 // --- Security ---
-// FIX: Changed mfaEnabled to a nested mfa object to match the SecuritySettings type.
 export const INITIAL_SECURITY_SETTINGS: SecuritySettings = {
     mfa: {
         enabled: true,
@@ -862,162 +887,54 @@ export const getAirtimeProviders = (Icons: any): AirtimeProvider[] => ([
 
 export const INITIAL_AIRTIME_PURCHASES: AirtimePurchase[] = [];
 
-export const BANK_ACCOUNT_CONFIG: { [countryCode: string]: any } = {
-  US: {
-    field1: { name: 'routingNumber', label: 'Routing Number', placeholder: 'e.g., 110000000', maxLength: 9, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => /^\d{9}$/.test(v) ? null : 'Routing number must be exactly 9 digits.' },
-    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 123456789', maxLength: 17, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length > 5 ? null : 'Account number is too short.' },
-  },
-  GB: {
-    field1: { name: 'sortCode', label: 'Sort Code', placeholder: 'e.g., 20-30-40', maxLength: 8, format: (v: string) => v.replace(/\D/g, '').replace(/(\d{2})(?=\d)/g, '$1-').slice(0, 8), validate: (v: string) => v.replace(/-/g, '').length === 6 ? null : 'Sort code must be 6 digits (e.g., 20-30-40).' },
-    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 12345678', maxLength: 8, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length === 8 ? null : 'Must be 8 digits.' },
-  },
-  IN: {
-    field1: { name: 'ifsc', label: 'IFSC Code', placeholder: 'e.g., SBIN0000001', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v) ? null : 'Invalid IFSC code format.' },
-    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 12345678901', maxLength: 18, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length >= 9 ? null : 'Account number is too short.' },
-  },
-  NG: {
-    field1: { name: 'nuban', label: 'NUBAN Account Number', placeholder: 'e.g., 0123456789', maxLength: 10, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => /^\d{10}$/.test(v) ? null : 'NUBAN must be exactly 10 digits.' },
-  },
-  DE: {
-    field1: { name: 'iban', label: 'IBAN', placeholder: 'e.g., DE89 3704 0044 0532 0130 00', maxLength: 43, format: (v: string) => (v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().match(/.{1,4}/g) || []).join(' '), validate: (v: string) => v.replace(/\s/g, '').length === 22 ? null : 'Invalid IBAN format. Must be 22 characters for Germany.' },
-    field2: { name: 'swiftBic', label: 'BIC/SWIFT', placeholder: 'e.g., COBADEFFXXX', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v) ? null : 'Invalid BIC/SWIFT code (e.g., CHASUS33XXX).' },
-  },
-  FR: {
-    field1: { name: 'iban', label: 'IBAN', placeholder: 'e.g., FR14 2004 1010 0505 0500 013M 02606', maxLength: 43, format: (v: string) => (v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().match(/.{1,4}/g) || []).join(' '), validate: (v: string) => v.replace(/\s/g, '').length === 27 ? null : 'Invalid IBAN format. Must be 27 characters for France.' },
-    field2: { name: 'swiftBic', label: 'BIC/SWIFT', placeholder: 'e.g., BNPAPFPPXXX', maxLength: 11, format: (v: string) => v.toUpperCase(), validate: (v: string) => /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v) ? null : 'Invalid BIC/SWIFT code.' },
-  },
-  AU: {
-    field1: { name: 'bsb', label: 'BSB', placeholder: 'e.g., 062-000', maxLength: 7, format: (v: string) => v.replace(/\D/g, '').replace(/(\d{3})(?=\d)/, '$1-').slice(0, 7), validate: (v: string) => v.replace(/-/g, '').length === 6 ? null : 'BSB must be 6 digits.' },
-    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 123456789', maxLength: 9, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length >= 6 ? null : 'Account number is too short.' },
-  },
-  CA: {
-    field1: { name: 'transitNumber', label: 'Transit Number', placeholder: 'e.g., 12345', maxLength: 5, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length === 5 ? null : 'Must be 5 digits.' },
-    field2: { name: 'accountNumber', label: 'Account Number', placeholder: 'e.g., 1234567', maxLength: 12, format: (v: string) => v.replace(/\D/g, ''), validate: (v: string) => v.length >= 7 ? null : 'Must be 7-12 digits.' },
-  },
-  default: {
-    field1: { name: 'accountNumber', label: 'Account Number / IBAN', placeholder: 'Enter account number or IBAN', maxLength: 34, format: (v: string) => v, validate: (v: string) => v.length > 5 ? null : 'Number is too short.' },
-    field2: { name: 'swiftBic', label: 'SWIFT / BIC / Other Code', placeholder: 'Enter relevant bank code', maxLength: 20, format: (v: string) => v.toUpperCase(), validate: (v: string) => v.length > 3 ? null : 'Code is too short.' },
-  }
-};
-
 export const FAQS: FaqItem[] = [
-    {
-        question: "How long do international transfers take?",
-        answer: "Standard transfers typically arrive within 2-3 business days. Express transfers usually arrive within 24 hours. Delivery times can vary based on the recipient's country and bank."
-    },
-    {
-        question: "What are the fees for sending money?",
-        answer: `We offer transparent pricing. For most transfers, there's a ${STANDARD_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} fee for standard delivery and a ${EXPRESS_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} fee for express delivery. Wire transfers have separate fees.`
-    },
-    {
-        question: "How do I increase my transfer limits?",
-        answer: "You can increase your limits by completing identity verification in the Security Center. Higher verification levels unlock higher transaction limits."
-    },
-    {
-        question: "Is my money safe with iCredit Union®?",
-        answer: "Absolutely. We use industry-leading security measures, including end-to-end encryption, multi-factor authentication, and proactive fraud monitoring to protect your account and your money."
-    },
+    { question: 'What are your international transfer fees?', answer: 'Our standard international transfer fee is $5.00, with an express option for $15.00. Fees may vary based on the destination country and transfer amount.' },
+    { question: 'How long do transfers take?', answer: 'Standard transfers typically arrive within 2-3 business days. Express transfers are usually completed within 24 hours. Delivery times can be affected by bank holidays and recipient bank processing times.' },
+    { question: 'How do I increase my transfer limits?', answer: 'You can request a limit increase through the Security Center. Limit increases are subject to additional verification (KYC) and account review.' },
 ];
 
 export const LEADERSHIP_TEAM: LeadershipProfile[] = [
-    { name: "Eleanor Vance", title: "Chief Executive Officer", imageUrl: "https://i.imgur.com/3Y2mmKx.jpeg", bio: "Eleanor drives the vision of iCredit Union, focusing on global financial inclusion and technological innovation." },
-    { name: "Marcus Thorne", title: "Chief Technology Officer", imageUrl: "https://i.imgur.com/8LDBx42.jpeg", bio: "Marcus leads our engineering teams, building the secure and scalable infrastructure that powers our platform." },
-    { name: "Isabella Rossi", title: "Chief Financial Officer", imageUrl: "https://i.imgur.com/dAnMcY9.jpeg", bio: "Isabella oversees the financial health and strategic investments of the company, ensuring sustainable growth." },
-    { name: "Julian Chen", title: "Chief Operating Officer", imageUrl: "https://i.imgur.com/h5I5T2P.jpeg", bio: "Julian manages global operations, ensuring a seamless and efficient experience for all our customers." },
+    { name: 'John Doe', title: 'Chief Executive Officer', imageUrl: 'https://i.imgur.com/QpYgSgU.jpeg', bio: 'Visionary leader with 20+ years in fintech.' },
+    { name: 'Jane Smith', title: 'Chief Technology Officer', imageUrl: 'https://i.imgur.com/rO0sA8a.jpeg', bio: 'Expert in scalable, secure financial platforms.' },
+    { name: 'Peter Jones', title: 'Chief Financial Officer', imageUrl: 'https://i.imgur.com/h5I5T2P.jpeg', bio: 'Drives financial strategy and global growth.' },
+    { name: 'Emily White', title: 'Chief Compliance Officer', imageUrl: 'https://i.imgur.com/sC3a3tA.jpeg', bio: 'Ensures adherence to global financial regulations.' },
 ];
 
 export const LEGAL_CONTENT = {
-    TERMS_OF_USE: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">1. Acceptance of Terms</h3>
-        <p style="margin-bottom: 1rem;">By accessing and using iCredit Union® services, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">2. Service Description</h3>
-        <p style="margin-bottom: 1rem;">iCredit Union® provides users with access to a rich collection of resources, including various communications tools, financial services, and personalized content. You also understand and agree that the service may include certain communications from iCredit Union®, such as service announcements and administrative messages, and that these communications are considered part of iCredit Union® membership.</p>
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">3. User Conduct</h3>
-        <p>You are responsible for all activity occurring on your account and shall abide by all applicable local, state, national and foreign laws, treaties and regulations in connection with your use of the Service, including those related to data privacy, international communications and the transmission of technical or personal data.</p>
-    `,
-    ONLINE_BANKING_GUARANTEE: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">Our Commitment to Your Security</h3>
-        <p style="margin-bottom: 1rem;">iCredit Union® is committed to providing a safe and secure online banking environment. Our Online Banking Guarantee provides 100% reimbursement for any funds lost due to unauthorized online transactions on your personal accounts, provided you have met your security responsibilities.</p>
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">Your Responsibilities</h3>
-        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
-            <li>Keep your password, PIN, and security codes confidential.</li>
-            <li>Use a unique password for your iCredit Union® account.</li>
-            <li>Enable Two-Factor Authentication (2FA).</li>
-            <li>Review your statements and transaction history regularly.</li>
-            <li>Report any suspicious activity to us immediately.</li>
-        </ul>
-        <p>Failure to meet these responsibilities may affect your eligibility for reimbursement under this guarantee.</p>
-    `,
-    COOKIE_POLICY: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">What Are Cookies?</h3>
-        <p style="margin-bottom: 1rem;">Cookies are small text files stored on your device when you visit websites. They are used to remember your preferences, help you navigate between pages efficiently, and make your experience more secure and personalized.</p>
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">How We Use Cookies</h3>
-        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
-            <li><strong>Essential Cookies:</strong> Necessary for the website to function, such as maintaining your login session.</li>
-            <li><strong>Performance Cookies:</strong> Help us understand how you use our app, so we can improve it.</li>
-            <li><strong>Functional Cookies:</strong> Remember your preferences, like language or theme settings.</li>
-            <li><strong>Advertising Cookies:</strong> Used to deliver relevant ads to you. You can control these in the Privacy Center.</li>
-        </ul>
-        <p>You can manage your cookie preferences at any time through your browser settings or within our Privacy Center.</p>
-    `,
-    CAREERS_INFO: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">Join Our Team</h3>
-        <p style="margin-bottom: 1rem;">We're building the future of finance, and we're looking for passionate, innovative people to join us on our mission. At iCredit Union®, you'll have the opportunity to work on challenging projects that have a real-world impact on millions of people globally.</p>
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">Current Openings (Simulated)</h3>
-        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
-            <li>Senior Frontend Engineer (React/TypeScript)</li>
-            <li>Lead Backend Engineer (Go/PostgreSQL)</li>
-            <li>Mobile Security Specialist (iOS/Android)</li>
-            <li>Product Manager, Global Payments</li>
-            <li>Data Scientist, Fraud Detection</li>
-        </ul>
-        <p>To apply, please send your resume and a cover letter to <a href="mailto:careers@icreditunion.com" style="color: blue;">careers@icreditunion.com</a>. We look forward to hearing from you!</p>
-    `,
-    PRESS_ROOM_INFO: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">iCredit Union® in the News</h3>
-        <p style="margin-bottom: 1rem;">Welcome to the iCredit Union® press room. For media inquiries, please contact <a href="mailto:press@icreditunion.com" style="color: blue;">press@icreditunion.com</a>.</p>
-        <div style="border-bottom: 1px solid #ccc; padding-bottom: 1rem; margin-bottom: 1rem;">
-            <p style="font-size: 0.9rem; color: #666;">July 15, 2024</p>
-            <h4 style="font-weight: bold; margin: 0.5rem 0;">iCredit Union® Wins "Best Digital Bank 2024" from Global Finance Magazine</h4>
-            <p>iCredit Union® was recognized for its innovative approach to international transfers and its commitment to user security.</p>
-        </div>
-        <div>
-            <p style="font-size: 0.9rem; color: #666;">June 28, 2024</p>
-            <h4 style="font-weight: bold; margin: 0.5rem 0;">iCredit Union® Expands Services to 10 New Countries in APAC Region</h4>
-            <p>The expansion marks a significant milestone in the company's mission to provide accessible financial services worldwide.</p>
-        </div>
-    `,
-    SITE_MAP_CONTENT: `
-        <h3 style="font-weight: bold; margin-bottom: 1rem;">Site Map</h3>
-        <p style="margin-bottom: 1rem;">Navigate to any section of the iCredit Union® platform.</p>
-        <ul style="list-style-type: disc; margin-left: 2rem; columns: 2;">
-            <li>Dashboard</li>
-            <li>Accounts</li>
-            <li>Send Money</li>
-            <li>Wire Transfer</li>
-            <li>Cards</li>
-            <li>History</li>
-            <li>Recipients</li>
-            <li>Tasks</li>
-            <li>Integrations</li>
-            <li>Invest</li>
-            <li>Crypto</li>
-            <li>Loans</li>
-            <li>Insurance</li>
-            <li>Quickteller Hub</li>
-            <li>QR Scanner</li>
-            <li>Book Flights</li>
-            <li>Pay Utilities</li>
-            <li>Subscriptions</li>
-            <li>Travel Check-In</li>
-            <li>ATM Locator</li>
-            <li>AI Advisor</li>
-            <li>Support</li>
-            <li>Security</li>
-            <li>Privacy Center</li>
-            <li>Platform</li>
-            <li>About Us</li>
-            <li>Contact Us</li>
-        </ul>
-    `,
+    TERMS_OF_USE: `<h3>Terms of Use</h3><p>Welcome to iCredit Union®. By using our services, you agree to these terms...</p>`,
+    CAREERS_INFO: `<h3>Careers at iCredit Union®</h3><p>We're always looking for talented individuals to join our team. Explore our open positions...</p>`,
+    PRESS_ROOM_INFO: `<h3>Press Room</h3><p>For all media inquiries, please contact our press team...</p>`,
+    SITE_MAP_CONTENT: `<h3>Site Map</h3><ul><li><a href="#">Dashboard</a></li><li><a href="#">Accounts</a></li><li><a href="#">Send Money</a></li></ul>`,
+    ONLINE_BANKING_GUARANTEE: `<h3>Online Banking Guarantee</h3><p>We guarantee that you will not be liable for unauthorized online banking transactions when you have met your security responsibilities.</p>`,
+    COOKIE_POLICY: `<h3>Cookie Policy</h3><p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>`,
 };
+
+export const INITIAL_WALLET_DETAILS: WalletDetails = {
+    balance: 1250.75,
+    currency: 'USD',
+    cardLastFour: '9876',
+};
+
+export const INITIAL_WALLET_TRANSACTIONS: WalletTransaction[] = [
+    { id: 'wtx1', description: 'Top Up from Checking', amount: 500.00, date: new Date(now.getTime() - 86400000 * 1), type: 'credit' },
+    { id: 'wtx2', description: 'Payment to Jane Doe', amount: 75.50, date: new Date(now.getTime() - 3600000 * 10), type: 'debit' },
+    { id: 'wtx3', description: 'Online Purchase - Shopify', amount: 129.99, date: new Date(now.getTime() - 3600000 * 5), type: 'debit' },
+];
+
+export const CUSTOMER_REVIEWS: CustomerReview[] = [
+    { id: 'rev1', author: 'Sarah L.', location: 'London, UK', rating: 5, comment: 'The best app for international transfers! So fast and the fees are very reasonable.', date: new Date('2024-05-20') },
+    { id: 'rev2', author: 'Carlos G.', location: 'Miami, FL', rating: 5, comment: 'I love the security features. I feel very safe using iCredit Union for my business.', date: new Date('2024-05-15') },
+    { id: 'rev3', author: 'Kenji T.', location: 'Tokyo, JP', rating: 4, comment: 'Great service. I wish there were more options for cash pickup in my area, but bank transfers are perfect.', date: new Date('2024-05-10') },
+];
+
+export const TOP_RATED_STAFF: StaffProfile[] = [
+    { id: 'staff1', name: 'Jessica Miller', title: 'Senior Support Specialist', imageUrl: 'https://i.imgur.com/IOe9Qna.jpeg', bio: 'Specializes in complex international transfers and compliance.', rating: 4.9 },
+    { id: 'staff2', name: 'David Chen', title: 'Account Security Analyst', imageUrl: 'https://i.imgur.com/sC3a3tA.jpeg', bio: 'Dedicated to protecting your account from fraud.', rating: 4.8 },
+    { id: 'staff3', name: 'Maria Rodriguez', title: 'Onboarding Team Lead', imageUrl: 'https://i.imgur.com/rO0sA8a.jpeg', bio: 'Helps new customers get started seamlessly.', rating: 5.0 },
+];
+
+export const INITIAL_CAUSES: Omit<Cause, 'details'>[] = [
+  { id: 'cause1', title: 'Helping Orphanages', shortDescription: 'Provide essential supplies, education, and a safe environment for orphaned children worldwide.', imageUrl: 'https://images.unsplash.com/photo-1599056011394-8c55a297e684?q=80&w=2940&auto=format&fit=crop' },
+  { id: 'cause2', title: 'Supporting Childless Mothers', shortDescription: 'Offer medical support, counseling, and resources for women struggling with infertility and infant loss.', imageUrl: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?q=80&w=2940&auto=format&fit=crop' },
+  { id: 'cause3', title: 'Assisting the Homeless', shortDescription: 'Fund shelters, food programs, and job training to help individuals get back on their feet.', imageUrl: 'https://images.unsplash.com/photo-1591599423982-f59b2a64c5e8?q=80&w=2940&auto=format&fit=crop' },
+];

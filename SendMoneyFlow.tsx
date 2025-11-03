@@ -15,6 +15,8 @@ interface SendMoneyFlowProps {
   onAuthorizeTransaction: (transactionId: string) => void;
   setActiveView: (view: View) => void;
   onClose: () => void;
+  // FIX: Added missing onContactSupport prop
+  onContactSupport: () => void;
 }
 
 const securityCheckMessages = [
@@ -26,7 +28,7 @@ const securityCheckMessages = [
 
 
 // Main Component
-export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accounts, createTransaction, transactions, securitySettings, hapticsEnabled, onAuthorizeTransaction, setActiveView, onClose }) => {
+export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accounts, createTransaction, transactions, securitySettings, hapticsEnabled, onAuthorizeTransaction, setActiveView, onClose, onContactSupport }) => {
   const [step, setStep] = useState(0); // 0: Details, 1: Review, 2: Authorize, 3: SecurityCheck, 4: Complete
   
   const availableSourceAccounts = accounts.filter(acc => acc.balance > 0);
@@ -297,6 +299,8 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
                 onStartOver={handleStartOver}
                 onViewActivity={() => { onClose(); setActiveView('history'); }}
                 onAuthorizeTransaction={onAuthorizeTransaction}
+                // FIX: Pass the onContactSupport prop
+                onContactSupport={onContactSupport}
             />
         );
       default: return null;

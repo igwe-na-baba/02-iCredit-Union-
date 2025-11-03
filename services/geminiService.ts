@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, Type, GenerateContentResponse, Chat } from "@google/genai";
 import { NewsArticle, InsuranceProduct, LoanProduct, SystemUpdate, AccountType, VerificationLevel, AdvisorResponse } from '../types';
 
@@ -23,6 +21,7 @@ export const translateWithGemini = async (text: string, targetLanguage: string):
             model: 'gemini-2.5-flash',
             contents: `Translate the following text to ${targetLanguage}. Return only the translated text, without any additional formatting or explanations. Text to translate: "${text}"`,
         });
+        // FIX: Removed optional chaining from response.text as it is not nullable.
         return response.text.trim();
     } catch (error) {
         console.error(`Error translating text to ${targetLanguage}:`, error);
@@ -70,7 +69,8 @@ export const getCountryBankingTip = async (countryName: string): Promise<Banking
       }
     });
     
-    const responseText = response?.text;
+    // FIX: Removed optional chaining as `text` is guaranteed on a successful response.
+    const responseText = response.text;
     if (!responseText || responseText.trim() === '') {
         throw new Error('Received empty or invalid response from Gemini API.');
     }
@@ -139,7 +139,8 @@ export const getFinancialNews = async (): Promise<FinancialNewsResult> => {
       }
     });
     
-    const responseText = response?.text;
+    // FIX: Removed optional chaining as `text` is guaranteed on a successful response.
+    const responseText = response.text;
     if (!responseText || responseText.trim() === '') {
         throw new Error('Received empty or invalid response from Gemini API.');
     }
@@ -192,7 +193,8 @@ export const getInsuranceProductDetails = async (productName: string): Promise<{
       }
     });
     
-    const responseText = response?.text;
+    // FIX: Removed optional chaining as `text` is guaranteed on a successful response.
+    const responseText = response.text;
     if (!responseText || responseText.trim() === '') {
         throw new Error('Received empty or invalid response from Gemini API.');
     }
@@ -246,7 +248,8 @@ export const getLoanProducts = async (): Promise<{ products: LoanProduct[]; isEr
             }
         });
         
-        const responseText = response?.text;
+        // FIX: Removed optional chaining as `text` is guaranteed on a successful response.
+        const responseText = response.text;
         if (!responseText || responseText.trim() === '') {
             throw new Error('Received empty or invalid response from Gemini API.');
         }
@@ -281,6 +284,7 @@ export const getSupportAnswer = async (query: string): Promise<{ answer: string;
         temperature: 0.3, 
       }
     });
+    // FIX: Removed optional chaining from response.text as it is not nullable.
     const result = { answer: response.text, isError: false };
     supportCache.set(query, result);
     return result;
@@ -327,6 +331,7 @@ export const getSystemUpdates = async (): Promise<{ updates: SystemUpdate[]; isE
                 }
             }
         });
+        // FIX: Removed optional chaining from response.text as it is not nullable.
         const parsedJson = JSON.parse(response.text.trim());
         const result = { updates: parsedJson.updates, isError: false };
         updatesCache.set(cacheKey, result);
@@ -363,6 +368,7 @@ export const getAccountPerks = async (accountType: AccountType, verificationLeve
                 }
             }
         });
+        // FIX: Removed optional chaining from response.text as it is not nullable.
         const parsedJson = JSON.parse(response.text.trim());
         const result = { perks: parsedJson.perks, isError: false };
         perksCache.set(cacheKey, result);
@@ -437,6 +443,7 @@ export const getFinancialAnalysis = async (data: string): Promise<{ analysis: Ad
                 }
             }
         });
+        // FIX: Removed optional chaining from response.text as it is not nullable.
         const parsedJson = JSON.parse(response.text.trim());
         const result = { analysis: parsedJson, isError: false };
         analysisCache.set(cacheKey, result);
@@ -444,5 +451,44 @@ export const getFinancialAnalysis = async (data: string): Promise<{ analysis: Ad
     } catch (error) {
         console.error("Error fetching financial analysis from Gemini:", error as any);
         return { analysis: null, isError: true };
+    }
+};
+
+const causeDetailsCache = new Map<string, { details: any; isError: boolean }>();
+
+export const getCauseDetails = async (causeTitle: string): Promise<{ details: { description: string, impacts: string[] } | null, isError: boolean }> => {
+    if (causeDetailsCache.has(causeTitle)) {
+        return causeDetailsCache.get(causeTitle)!;
+    }
+
+    if (!ai) {
+        const fallback = { details: { description: `Your donation helps support our work for ${causeTitle}.`, impacts: ["Provides essential supplies.", "Funds critical research.", "Supports on-the-ground staff."] }, isError: false };
+        causeDetailsCache.set(causeTitle, fallback);
+        return fallback;
+    }
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `You are a copywriter for a charity. For the cause "${causeTitle}", write a short, empathetic, and compelling description (2-3 sentences) to encourage donations. Also, provide a list of exactly 3 tangible impacts a donation could have.`,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        description: { type: Type.STRING, description: 'The compelling description.' },
+                        impacts: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of 3 tangible impacts.' }
+                    }
+                }
+            }
+        });
+        // FIX: Removed optional chaining from response.text as it is not nullable.
+        const parsedJson = JSON.parse(response.text.trim());
+        const result = { details: parsedJson, isError: false };
+        causeDetailsCache.set(causeTitle, result);
+        return result;
+    } catch (error) {
+        console.error("Error fetching cause details from Gemini:", error as any);
+        return { details: null, isError: true };
     }
 };

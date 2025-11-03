@@ -4,9 +4,9 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { SendMoneyFlow } from './components/SendMoneyFlow';
 import { Recipients } from './components/Recipients';
-import { Transaction, Recipient, TransactionStatus, Card, Notification, NotificationType, AdvancedTransferLimits, Country, LoanApplication, LoanApplicationStatus, Account, VerificationLevel, CryptoHolding, CryptoAsset, SubscriptionService, AppleCardDetails, AppleCardTransaction, SpendingLimit, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, View, Task, FlightBooking, UtilityBill, UtilityBiller, AdvisorResponse, BalanceDisplayMode, AccountType, AirtimePurchase, PushNotification, PushNotificationSettings, SavedSession, VirtualCard } from './types';
+import { Transaction, Recipient, TransactionStatus, Card, Notification, NotificationType, AdvancedTransferLimits, Country, LoanApplication, LoanApplicationStatus, Account, VerificationLevel, CryptoHolding, CryptoAsset, SubscriptionService, AppleCardDetails, AppleCardTransaction, SpendingLimit, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, View, Task, FlightBooking, UtilityBill, UtilityBiller, AdvisorResponse, BalanceDisplayMode, AccountType, AirtimePurchase, PushNotification, PushNotificationSettings, SavedSession, VirtualCard, WalletDetails, Donation } from './types';
 // FIX: Added NEW_USER_ACCOUNTS_TEMPLATE to the import from constants.ts to resolve a reference error.
-import { INITIAL_RECIPIENTS, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_CARD_TRANSACTIONS, INITIAL_ADVANCED_TRANSFER_LIMITS, SELF_RECIPIENT, INITIAL_ACCOUNTS, getInitialCryptoAssets, INITIAL_CRYPTO_HOLDINGS, CRYPTO_TRADE_FEE_PERCENT, INITIAL_SUBSCRIPTIONS, INITIAL_APPLE_CARD_DETAILS, INITIAL_APPLE_CARD_TRANSACTIONS, INITIAL_TRAVEL_PLANS, INITIAL_SECURITY_SETTINGS, INITIAL_TRUSTED_DEVICES, USER_PROFILE, INITIAL_PLATFORM_SETTINGS, THEME_COLORS, INITIAL_TASKS, INITIAL_FLIGHT_BOOKINGS, INITIAL_UTILITY_BILLS, getUtilityBillers, getAirtimeProviders, INITIAL_AIRTIME_PURCHASES, INITIAL_PUSH_SETTINGS, EXCHANGE_RATES, NEW_USER_PROFILE_TEMPLATE, NEW_USER_ACCOUNTS_TEMPLATE, INITIAL_VIRTUAL_CARDS, DOMESTIC_WIRE_FEE, INTERNATIONAL_WIRE_FEE, LEGAL_CONTENT } from './constants';
+import { INITIAL_RECIPIENTS, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_CARD_TRANSACTIONS, INITIAL_ADVANCED_TRANSFER_LIMITS, SELF_RECIPIENT, INITIAL_ACCOUNTS, getInitialCryptoAssets, INITIAL_CRYPTO_HOLDINGS, CRYPTO_TRADE_FEE_PERCENT, INITIAL_SUBSCRIPTIONS, INITIAL_APPLE_CARD_DETAILS, INITIAL_APPLE_CARD_TRANSACTIONS, INITIAL_TRAVEL_PLANS, INITIAL_SECURITY_SETTINGS, INITIAL_TRUSTED_DEVICES, USER_PROFILE, INITIAL_PLATFORM_SETTINGS, THEME_COLORS, INITIAL_TASKS, INITIAL_FLIGHT_BOOKINGS, INITIAL_UTILITY_BILLS, getUtilityBillers, getAirtimeProviders, INITIAL_AIRTIME_PURCHASES, INITIAL_PUSH_SETTINGS, EXCHANGE_RATES, NEW_USER_PROFILE_TEMPLATE, NEW_USER_ACCOUNTS_TEMPLATE, INITIAL_VIRTUAL_CARDS, DOMESTIC_WIRE_FEE, INTERNATIONAL_WIRE_FEE, LEGAL_CONTENT, INITIAL_WALLET_DETAILS } from './constants';
 import * as Icons from './components/Icons';
 import { Welcome } from './components/Welcome';
 import { ActivityLog } from './components/ActivityLog';
@@ -23,6 +23,7 @@ import { TravelCheckIn } from './components/TravelCheckIn';
 import { PlatformFeatures } from './components/PlatformFeatures';
 import { DynamicIslandSimulator } from './components/DynamicIslandSimulator';
 import { BankingChat } from './components/BankingChat';
+// FIX: Corrected import path casing from './components/tasks' to './components/Tasks' to resolve module resolution errors.
 import { Tasks } from './components/Tasks';
 import { Flights } from './components/Flights';
 import { Utilities } from './components/Utilities';
@@ -80,6 +81,9 @@ import { WireTransfer } from './components/WireTransfer';
 import { About } from './components/About';
 import { Contact } from './components/Contact';
 import { LegalModal } from './components/LegalModal';
+import { DigitalWallet } from './components/DigitalWallet';
+import { Ratings } from './components/Ratings';
+import { GlobalAid } from './components/GlobalAid';
 
 
 type AuthStatus = 'intro' | 'initializing' | 'auth' | 'loggedIn' | 'locked' | 'creatingAccount';
@@ -146,6 +150,8 @@ function AppContent() {
   const [privacySettings, setPrivacySettings] = useState({ ads: true, sharing: true, email: { transactions: true, security: true, promotions: true }, sms: { transactions: true, security: true, promotions: false } });
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
   const [legalModalContent, setLegalModalContent] = useState<{ title: string; content: string } | null>(null);
+  const [walletDetails, setWalletDetails] = useState<WalletDetails>(INITIAL_WALLET_DETAILS);
+  const [donations, setDonations] = useState<Donation[]>([]);
 
   const [pushNotificationSettings, setPushNotificationSettings] = useState<PushNotificationSettings>(INITIAL_PUSH_SETTINGS);
   const [linkedServices, setLinkedServices] = useState<Record<string, string>>({});
@@ -436,6 +442,24 @@ function AppContent() {
       addNotification(NotificationType.SECURITY, 'Recipient Updated', `Details for ${data.fullName} have been updated.`);
   };
 
+  const handleDonate = (causeId: string, amount: number, sourceAccountId: string): boolean => {
+      const sourceAccount = accounts.find(acc => acc.id === sourceAccountId);
+      if (!sourceAccount || sourceAccount.balance < amount) {
+          addNotification(NotificationType.TRANSACTION, 'Donation Failed', 'Insufficient funds in the selected account.');
+          return false;
+      }
+      const newDonation: Donation = {
+          id: `don_${Date.now()}`,
+          causeId,
+          amount,
+          date: new Date(),
+      };
+      setDonations(prev => [...prev, newDonation]);
+      setAccounts(prev => prev.map(acc => acc.id === sourceAccountId ? { ...acc, balance: acc.balance - amount } : acc));
+      addNotification(NotificationType.TRANSACTION, 'Donation Successful', `Thank you for your generous donation of ${amount.toLocaleString('en-US', {style:'currency', currency:'USD'})}.`);
+      return true;
+  };
+
   useEffect(() => {
     const root = document.documentElement;
     const theme = THEME_COLORS[platformSettings.theme];
@@ -686,6 +710,7 @@ function AppContent() {
 
   const isDashboard = activeView === 'dashboard';
 
+  // FIX: Added missing views ('send', 'wire', 'about', 'contact', 'wallet', 'ratings', 'globalAid') to the viewMap to satisfy the 'View' type and resolve the compile error.
   const viewMap: { [key in View]: React.ReactNode } = {
     dashboard: <Dashboard 
         accounts={accounts} 
@@ -701,6 +726,7 @@ function AppContent() {
         userProfile={userProfile}
         onOpenSendMoneyFlow={onOpenSendMoneyFlow}
     />,
+    send: null, // 'send' view is handled by the SendMoneyFlow modal, not as a main view.
     recipients: <Recipients recipients={recipients} addRecipient={addRecipient} onUpdateRecipient={onUpdateRecipient} />,
     history: <ActivityLog transactions={transactions} onUpdateTransactions={(ids, updates) => setTransactions(prev => prev.map(t => ids.includes(t.id) ? {...t, ...updates} : t))} onRepeatTransaction={handleRepeatTransaction} />,
     security: <Security 
@@ -768,174 +794,181 @@ function AppContent() {
       appleCardTransactions={appleCardTransactions}
       onPaySubscription={(subId) => {
         const sub = subscriptions.find(s => s.id === subId);
-        if(!sub || !checkingAccount || checkingAccount.balance < sub.amount) return false;
-        setAccounts(prev => prev.map(a => a.id === checkingAccount.id ? {...a, balance: a.balance - sub.amount} : a));
-        setSubscriptions(prev => prev.map(s => s.id === subId ? {...s, isPaid: true} : s));
-        return true;
+        const acc = accounts.find(a => a.type === AccountType.CHECKING);
+        if (sub && acc && acc.balance >= sub.amount) {
+          setAccounts(prev => prev.map(a => a.id === acc.id ? {...a, balance: a.balance - sub.amount} : a));
+          setSubscriptions(prev => prev.map(s => s.id === subId ? {...s, isPaid: true} : s));
+          return true;
+        }
+        return false;
       }}
-      onUpdateSpendingLimits={(limits: SpendingLimit[]) => setAppleCardDetails(prev => ({...prev, spendingLimits: limits}))}
-      onUpdateTransactionCategory={(txId: string, category: SpendingCategory) => setAppleCardTransactions(prev => prev.map(tx => tx.id === txId ? {...tx, category} : tx))}
+      onUpdateSpendingLimits={(limits) => setAppleCardDetails(prev => ({...prev, spendingLimits: limits}))}
+      onUpdateTransactionCategory={(txId, cat) => setAppleCardTransactions(prev => prev.map(tx => tx.id === txId ? {...tx, category: cat} : tx))}
     />,
-    checkin: <TravelCheckIn travelPlans={travelPlans} addTravelPlan={(country, startDate, endDate) => setTravelPlans(prev => [...prev, {id: `tp_${Date.now()}`, country, startDate, endDate, status: TravelPlanStatus.UPCOMING}])} />,
-    platform: <PlatformFeatures settings={platformSettings} onUpdateSettings={setPlatformSettings} />,
+    checkin: <TravelCheckIn travelPlans={travelPlans} addTravelPlan={(country, startDate, endDate) => {
+      const newPlan: TravelPlan = {
+        id: `tp_${Date.now()}`,
+        country,
+        startDate,
+        endDate,
+        status: new Date() >= startDate && new Date() <= endDate ? TravelPlanStatus.ACTIVE : TravelPlanStatus.UPCOMING,
+      };
+      setTravelPlans(prev => [newPlan, ...prev]);
+    }}/>,
+    platform: <PlatformFeatures settings={platformSettings} onUpdateSettings={(newSettings) => setPlatformSettings(prev => ({ ...prev, ...newSettings }))} />,
     tasks: <Tasks 
-      tasks={tasks} 
-      addTask={(text, dueDate) => setTasks(prev => [...prev, {id: `task_${Date.now()}`, text, completed: false, dueDate}])}
-      toggleTask={(id) => setTasks(prev => prev.map(t => t.id === id ? {...t, completed: !t.completed} : t))}
-      deleteTask={(id) => setTasks(prev => prev.filter(t => t.id !== id))}
+        tasks={tasks}
+        addTask={(text, dueDate) => {
+            const newTask: Task = { id: `task_${Date.now()}`, text, completed: false, dueDate };
+            setTasks(prev => [newTask, ...prev]);
+        }}
+        toggleTask={(id) => setTasks(prev => prev.map(t => t.id === id ? {...t, completed: !t.completed} : t))}
+        deleteTask={(id) => setTasks(prev => prev.filter(t => t.id !== id))}
     />,
     flights: <Flights 
-      bookings={flightBookings}
-      onBookFlight={(booking, sourceAccountId) => {
-        const acc = accounts.find(a => a.id === sourceAccountId);
-        if(!acc || acc.balance < booking.totalPrice) return false;
-        setAccounts(prev => prev.map(a => a.id === sourceAccountId ? {...a, balance: a.balance - booking.totalPrice} : a));
-        setFlightBookings(prev => [...prev, {...booking, id: `bk_${Date.now()}`, bookingDate: new Date(), status: 'Confirmed'}]);
-        return true;
-      }}
-      accounts={accounts}
-      setActiveView={setActiveView}
-    />,
-    utilities: <Utilities 
-        bills={utilityBills} 
-        billers={utilityBillers} 
+        bookings={flightBookings}
+        onBookFlight={(booking, sourceAccountId) => {
+            const acc = accounts.find(a => a.id === sourceAccountId);
+            if (acc && acc.balance >= booking.totalPrice) {
+                const newBooking: FlightBooking = { ...booking, id: `book_${Date.now()}`, bookingDate: new Date(), status: 'Confirmed' };
+                setFlightBookings(prev => [newBooking, ...prev]);
+                setAccounts(prev => prev.map(a => a.id === sourceAccountId ? {...a, balance: a.balance - booking.totalPrice} : a));
+                return true;
+            }
+            return false;
+        }}
         accounts={accounts}
         setActiveView={setActiveView}
-        onPayBill={(billId, accountId) => {
-            const bill = utilityBills.find(b => b.id === billId);
-            const acc = accounts.find(a => a.id === accountId);
-            if(!bill || !acc || acc.balance < bill.amount) return false;
-            setAccounts(prev => prev.map(a => a.id === accountId ? {...a, balance: a.balance - bill.amount} : a));
-            setUtilityBills(prev => prev.map(b => b.id === billId ? {...b, isPaid: true} : b));
-            return true;
-        }}
     />,
-    integrations: <Integrations 
-        linkedServices={linkedServices}
-        onLinkService={onLinkService}
+    utilities: <Utilities 
+      bills={utilityBills} 
+      billers={utilityBillers} 
+      accounts={accounts} 
+      setActiveView={setActiveView}
+      onPayBill={(billId, sourceAccountId) => {
+        const bill = utilityBills.find(b => b.id === billId);
+        const acc = accounts.find(a => a.id === sourceAccountId);
+        if (bill && acc && acc.balance >= bill.amount) {
+          setUtilityBills(prev => prev.map(b => b.id === billId ? {...b, isPaid: true} : b));
+          setAccounts(prev => prev.map(a => a.id === sourceAccountId ? {...a, balance: a.balance - bill.amount} : a));
+          return true;
+        }
+        return false;
+      }} 
     />,
-    // FIX: Corrected the prop name from `runAnalysis` to `runFinancialAnalysis` to match the function defined in the component.
-    advisor: <FinancialAdvisor analysis={financialAnalysis} isAnalyzing={isAnalyzing} analysisError={analysisError} runAnalysis={runFinancialAnalysis} setActiveView={setActiveView} />,
+    integrations: <Integrations linkedServices={linkedServices} onLinkService={onLinkService} />,
+    advisor: <FinancialAdvisor 
+      analysis={financialAnalysis} 
+      isAnalyzing={isAnalyzing} 
+      analysisError={analysisError} 
+      // FIX: Corrected prop name from `runAnalysis` to `runFinancialAnalysis`
+      runFinancialAnalysis={runFinancialAnalysis}
+      setActiveView={setActiveView}
+    />,
     invest: <Investments />,
     atmLocator: <AtmLocator />,
-    quickteller: <Quickteller 
+    quickteller: <Quickteller
       airtimeProviders={airtimeProviders}
       purchases={airtimePurchases}
       accounts={accounts}
       setActiveView={setActiveView}
       onPurchase={(providerId, phoneNumber, amount, accountId) => {
         const acc = accounts.find(a => a.id === accountId);
-        if(!acc || acc.balance < amount) return false;
-        setAccounts(prev => prev.map(a => a.id === accountId ? {...a, balance: a.balance - amount} : a));
-        setAirtimePurchases(prev => [{id: `at_${Date.now()}`, providerId, phoneNumber, amount, purchaseDate: new Date()}, ...prev]);
-        return true;
+        if (acc && acc.balance >= amount) {
+            const newPurchase: AirtimePurchase = { id: `air_${Date.now()}`, providerId, phoneNumber, amount, purchaseDate: new Date() };
+            setAirtimePurchases(prev => [newPurchase, ...prev]);
+            setAccounts(prev => prev.map(a => a.id === accountId ? {...a, balance: a.balance - amount} : a));
+            return true;
+        }
+        return false;
       }}
     />,
     qrScanner: <QrScanner hapticsEnabled={platformSettings.hapticsEnabled} />,
-    privacy: <PrivacyCenter settings={privacySettings} onUpdateSettings={(update) => setPrivacySettings(prev => ({...prev, ...update}))}/>,
-    send: <div />, // Placeholder, handled by modal
-    wire: <div />, // Placeholder, handled by modal
+    privacy: <PrivacyCenter settings={privacySettings} onUpdateSettings={(update) => {
+        setPrivacySettings(prev => ({...prev, ...update}));
+        addNotification(NotificationType.SECURITY, 'Privacy Settings Updated', 'Your preferences have been saved.');
+    }} />,
+    wire: <WireTransfer accounts={accounts} recipients={recipients} onSendWire={handleSendWire} onClose={() => setActiveView('dashboard')} />,
     about: <About />,
     contact: <Contact setActiveView={setActiveView} />,
+    wallet: <DigitalWallet wallet={walletDetails} />,
+    ratings: <Ratings />,
+    globalAid: <GlobalAid donations={donations} onDonate={handleDonate} accounts={accounts} />,
   };
 
-  const currentView = viewMap[activeView];
-
   return (
-    <>
-      <DynamicIslandSimulator transaction={activeTransactionForIsland} />
-      {pushNotification && <PushNotificationToast notification={pushNotification} onClose={() => setPushNotification(null)} />}
-      {showCongratsOverlay && <CongratulationsOverlay />}
-      {sendMoneyFlowState.isOpen && <SendMoneyFlow 
-        recipients={recipients} 
-        accounts={accounts} 
-        createTransaction={createTransaction}
-        transactions={transactions} 
-        securitySettings={securitySettings} 
-        hapticsEnabled={platformSettings.hapticsEnabled}
-        onAuthorizeTransaction={handleAuthorizeTransaction}
-        setActiveView={setActiveView}
-        onClose={() => setSendMoneyFlowState({ isOpen: false })}
-        onLinkAccount={onLinkAccount}
-        onDepositCheck={onDepositCheck}
-        onSplitTransaction={onSplitTransaction}
-        initialTab={sendMoneyFlowState.initialTab}
-        transactionToRepeat={sendMoneyFlowState.transactionToRepeat}
-        userProfile={userProfile}
-        onContactSupport={() => {
-            setSendMoneyFlowState({ isOpen: false });
-            setIsContactSupportOpen(true);
-        }}
-      />}
-       {activeView === 'wire' && (
-        <WireTransfer
-          accounts={accounts}
-          recipients={recipients}
-          onSendWire={handleSendWire}
-          onClose={() => setActiveView('dashboard')}
+    <div className="bg-slate-100 min-h-screen">
+        <Header 
+          onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} 
+          isMenuOpen={isMenuOpen}
+          activeView={activeView}
+          setActiveView={setActiveView}
+          onLogout={() => setIsLogoutModalOpen(true)}
+          notifications={notifications}
+          onMarkNotificationsAsRead={() => setNotifications(prev => prev.map(n => ({...n, read: true})))}
+          onNotificationClick={(view) => setActiveView(view)}
+          userProfile={userProfile}
+          onOpenLanguageSelector={() => setIsLanguageSelectorOpen(true)}
+          onOpenSendMoneyFlow={onOpenSendMoneyFlow}
         />
-      )}
-       {isLinkAccountModalOpen && <LinkBankAccountModal onClose={() => setIsLinkAccountModalOpen(false)} onLinkSuccess={onLinkAccountSuccess} />}
-      <div className={`min-h-screen font-sans transition-colors duration-300 ${isDashboard ? 'dark bg-transparent' : 'bg-slate-100'}`}>
-        {isDashboard && (
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="fixed inset-0 w-full h-full object-cover z-0 transition-opacity duration-500"
-                style={{ opacity: 0.5 }}
-                src="https://assets.mixkit.co/videos/preview/mixkit-times-square-in-the-rain-at-night-4379-large.mp4"
+        
+        <DynamicIslandSimulator transaction={activeTransactionForIsland} />
+        <main className={`p-4 sm:p-6 lg:p-8 transition-opacity duration-300 ${isMenuOpen ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+            <div 
+                className={`bg-white/50 backdrop-blur-3xl rounded-3xl shadow-2xl p-6 min-h-[calc(100vh-8rem)] ${isDashboard ? 'bg-transparent shadow-none backdrop-blur-none' : ''}`}
+            >
+                {viewMap[activeView]}
+            </div>
+        </main>
+        
+        <Footer 
+          setActiveView={setActiveView} 
+          onOpenSendMoneyFlow={onOpenSendMoneyFlow} 
+          openLegalModal={openLegalModal} 
+        />
+        <BankingChat />
+        
+        {sendMoneyFlowState.isOpen && (
+            <SendMoneyFlow 
+                recipients={recipients} 
+                accounts={accounts} 
+                createTransaction={createTransaction}
+                transactions={transactions}
+                securitySettings={securitySettings}
+                hapticsEnabled={platformSettings.hapticsEnabled}
+                onAuthorizeTransaction={handleAuthorizeTransaction}
+                setActiveView={setActiveView}
+                onClose={() => setSendMoneyFlowState({ isOpen: false })}
+                onLinkAccount={onLinkAccount}
+                onDepositCheck={onDepositCheck}
+                onSplitTransaction={onSplitTransaction}
+                initialTab={sendMoneyFlowState.initialTab}
+                transactionToRepeat={sendMoneyFlowState.transactionToRepeat}
+                userProfile={userProfile}
+                onContactSupport={() => setIsContactSupportOpen(true)}
             />
         )}
-        <div className="relative z-10 flex">
-          <div className="flex-1">
-            <Header
-              onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-              isMenuOpen={isMenuOpen}
-              activeView={activeView}
-              setActiveView={setActiveView}
-              onLogout={() => setIsLogoutModalOpen(true)}
-              notifications={notifications}
-              onMarkNotificationsAsRead={() => setNotifications(prev => prev.map(n => ({...n, read: true})))}
-              onNotificationClick={(view) => setActiveView(view)}
-              userProfile={userProfile}
-              onOpenLanguageSelector={() => setIsLanguageSelectorOpen(true)}
-              onOpenSendMoneyFlow={onOpenSendMoneyFlow}
-            />
-            <main className="p-4 sm:p-6 lg:p-8">
-              {currentView}
-            </main>
-          </div>
-        </div>
-        <Footer 
-            setActiveView={setActiveView}
-            onOpenSendMoneyFlow={onOpenSendMoneyFlow}
-            openLegalModal={openLegalModal}
-        />
-      </div>
-      <BankingChat />
-      {isLogoutModalOpen && <LogoutConfirmationModal onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleLogout} />}
-      {showInactivityModal && <InactivityModal onStayLoggedIn={handleStayLoggedIn} onLogout={handleLogout} countdownStart={INACTIVITY_MODAL_COUNTDOWN} />}
-      {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} onSuccess={() => addNotification(NotificationType.SECURITY, 'Password Changed', 'Your account password has been successfully updated.')} />}
-      {isResumeModalOpen && savedSession && <ResumeSessionModal session={savedSession} onResume={handleResumeSession} onStartFresh={handleStartFresh} />}
-      {isContactSupportOpen && <ContactSupportModal onClose={() => setIsContactSupportOpen(false)} onSubmit={onContactSupport} transactions={transactions} />}
-      {isLanguageSelectorOpen && <LanguageSelector onClose={() => setIsLanguageSelectorOpen(false)} />}
-      {legalModalContent && (
-        <LegalModal 
-            title={legalModalContent.title} 
-            content={legalModalContent.content} 
-            onClose={() => setLegalModalContent(null)} 
-        />
-      )}
-    </>
+        {isLogoutModalOpen && <LogoutConfirmationModal onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleLogout} />}
+        {showInactivityModal && <InactivityModal onStayLoggedIn={handleStayLoggedIn} onLogout={handleLogout} countdownStart={INACTIVITY_MODAL_COUNTDOWN} />}
+        {isChangePasswordModalOpen && <ChangePasswordModal onClose={() => setIsChangePasswordModalOpen(false)} onSuccess={() => addNotification(NotificationType.SECURITY, 'Password Changed', 'Your password has been successfully updated.')}/>}
+        {isLinkAccountModalOpen && <LinkBankAccountModal onClose={() => setIsLinkAccountModalOpen(false)} onLinkSuccess={onLinkAccountSuccess} />}
+        {pushNotification && <PushNotificationToast notification={pushNotification} onClose={() => setPushNotification(null)} />}
+        {showCongratsOverlay && <CongratulationsOverlay />}
+        {isResumeModalOpen && savedSession && <ResumeSessionModal session={savedSession} onResume={handleResumeSession} onStartFresh={handleStartFresh} />}
+        {isContactSupportOpen && <ContactSupportModal onClose={() => setIsContactSupportOpen(false)} onSubmit={onContactSupport} transactions={transactions} />}
+        {isLanguageSelectorOpen && <LanguageSelector onClose={() => setIsLanguageSelectorOpen(false)} />}
+        {legalModalContent && <LegalModal title={legalModalContent.title} content={legalModalContent.content} onClose={() => setLegalModalContent(null)} />}
+    </div>
   );
 }
 
-export function App() {
+// FIX: Added a default export for the App component, wrapping the main content with the LanguageProvider. This resolves the import error in index.tsx.
+function App() {
   return (
     <LanguageProvider>
       <AppContent />
     </LanguageProvider>
   );
 }
+
+export default App;

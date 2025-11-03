@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardTransaction, SPENDING_CATEGORIES } from '../types';
-import { ICreditUnionLogo, EyeIcon, EyeSlashIcon, LockClosedIcon, PlusCircleIcon, AppleWalletIcon, VisaIcon, MastercardIcon, ChevronLeftIcon, ChevronRightIcon, ShoppingBagIcon, TransportIcon, FoodDrinkIcon, EntertainmentIcon, GlobeAmericasIcon, XIcon, Cog8ToothIcon, PlusIcon } from './Icons';
+// FIX: Add missing icons.
+import { ICreditUnionLogo, EyeIcon, EyeSlashIcon, LockClosedIcon, PlusCircleIcon, AppleWalletIcon, VisaIcon, MastercardIcon, ChevronLeftIcon, ChevronRightIcon, ShoppingBagIcon, TransportIcon, FoodDrinkIcon, EntertainmentIcon, GlobeAmericasIcon, XIcon, Cog8ToothIcon, PlusIcon, PencilIcon } from './Icons';
 import { AddFundsModal } from './AddFundsModal';
 import { AddCardModal } from './AddCardModal';
 import { AdvancedCardControlsModal } from './AdvancedCardControlsModal';
@@ -155,7 +156,7 @@ const SpendingSummary: React.FC<{ transactions: CardTransaction[] }> = ({ transa
     }, [transactions]);
     
     // FIX: Explicitly cast the result of Object.values to number[] to resolve a TypeScript
-    // type inference issue where it was being treated as unknown[].
+    // type inference issue where it was being treated as `unknown[]`.
     const maxSpending = Math.max(0, ...Object.values(byCategory) as number[]);
 
     return (

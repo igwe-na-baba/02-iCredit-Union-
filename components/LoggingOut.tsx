@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // FIX: Renamed ApexBankLogo to ICreditUnionLogo to fix the import error.
+// FIX: Add missing icons
 import { ShieldCheckIcon, GlobeAltIcon, ICreditUnionLogo, SparklesIcon } from './Icons';
 
 interface LoggingOutProps {
@@ -63,7 +64,7 @@ export const LoggingOut: React.FC<LoggingOutProps> = ({ onComplete }) => {
                         {currentStep.icon}
                     </div>
                     <h2 className="text-3xl font-bold text-slate-100">{currentStep.title}</h2>
-                    <p className="mt-3 text-slate-400 text-lg">{currentStep.message}</p>
+                    <p className="mt-3 text-lg text-slate-400">{currentStep.message}</p>
                 </div>
             </div>
             {/* Progress Bar */}

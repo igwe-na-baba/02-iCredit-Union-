@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// FIX: Add missing icons
 import { SpinnerIcon, CheckCircleIcon, ShieldCheckIcon, GlobeAltIcon, BankIcon, DocumentCheckIcon } from './Icons';
 
 interface AccountProvisioningAnimationProps {

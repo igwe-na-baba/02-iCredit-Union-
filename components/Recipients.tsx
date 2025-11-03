@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Recipient, Country } from '../types';
 import { AddRecipientModal } from './AddRecipientModal';
+// FIX: Added PencilIcon to imports.
 import { ChevronDownIcon, ClipboardDocumentIcon, CheckCircleIcon, BankIcon, CreditCardIcon, WithdrawIcon, getBankIcon, PencilIcon, getServiceIcon } from './Icons';
 
 interface RecipientsProps {

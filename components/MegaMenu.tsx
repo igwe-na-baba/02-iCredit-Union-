@@ -7,7 +7,10 @@ import {
     TrendingUpIcon, PlusCircleIcon, MapIcon, LightningBoltIcon, QrCodeIcon, ShieldCheckIcon,
     GlobeAmericasIcon,
     BuildingOfficeIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    // FIX: Added StarIcon to imports to resolve reference error.
+    StarIcon,
+    HeartIcon
 } from './Icons';
 import { View, UserProfile } from '../types';
 
@@ -34,6 +37,7 @@ const menuConfig: {
         items: [
             { view: 'dashboard', label: 'Dashboard', description: "Your financial overview.", icon: DashboardIcon },
             { view: 'accounts', label: 'Accounts', description: "Manage all your balances.", icon: WalletIcon },
+            { view: 'wallet', label: 'Digital Wallet', description: "Instant P2P & online pay.", icon: CreditCardIcon },
             { view: 'send', label: 'Send Money', description: "Instant global transfers.", icon: SendIcon },
             { view: 'wire', label: 'Wire Transfer', description: "Domestic & int'l wires.", icon: GlobeAmericasIcon },
             { view: 'cards', label: 'Cards', description: "Physical & virtual cards.", icon: CreditCardIcon },
@@ -69,6 +73,12 @@ const menuConfig: {
             { view: 'atmLocator', label: 'ATM Locator', description: "Find nearby ATMs worldwide.", icon: MapIcon },
         ]
     },
+     {
+        category: 'Community',
+        items: [
+            { view: 'globalAid', label: 'Global Aid', description: 'Donate to important causes.', icon: HeartIcon },
+        ]
+    },
     {
         category: 'System',
         items: [
@@ -84,6 +94,7 @@ const menuConfig: {
         items: [
             { view: 'about', label: 'About Us', description: 'Our mission, team, and values.', icon: BuildingOfficeIcon },
             { view: 'contact', label: 'Contact Us', description: 'Get in touch with our team.', icon: ChatBubbleLeftRightIcon },
+            { view: 'ratings', label: 'Ratings & Reviews', description: 'See what our customers say.', icon: StarIcon },
         ]
     }
 ];

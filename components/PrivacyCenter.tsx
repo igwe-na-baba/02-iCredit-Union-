@@ -122,34 +122,33 @@ export const PrivacyCenter: React.FC<PrivacyCenterProps> = ({ settings, onUpdate
                          <div className="space-y-2 divide-y divide-slate-300">
                              <ToggleSwitch label="Transactions" description="Real-time transfer alerts." enabled={settings.sms.transactions} onChange={val => onUpdateSettings({ sms: {...settings.sms, transactions: val} })}/>
                              <ToggleSwitch label="Security Alerts" description="Urgent security notifications." enabled={settings.sms.security} onChange={val => onUpdateSettings({ sms: {...settings.sms, security: val} })}/>
-                             <ToggleSwitch label="Promotions" description="Occasional marketing messages." enabled={settings.sms.promotions} onChange={val => onUpdateSettings({ sms: {...settings.sms, promotions: val} })}/>
+                             <ToggleSwitch label="Promotions" description="Offers & new features." enabled={settings.sms.promotions} onChange={val => onUpdateSettings({ sms: {...settings.sms, promotions: val} })}/>
                         </div>
                     </div>
                 </div>
             </div>
-
-             <div className="bg-slate-200 rounded-2xl shadow-digital">
+            
+            <div className="bg-slate-200 rounded-2xl shadow-digital">
                 <div className="p-6 border-b border-slate-300"><h3 className="text-xl font-bold text-slate-800">Manage Your Data</h3></div>
                 <div className="p-6 space-y-4">
-                     <DataActionButton
-                        icon={<ArrowDownTrayIcon className="w-6 h-6"/>}
+                    <DataActionButton
+                        icon={<ArrowDownTrayIcon className="w-6 h-6" />}
                         title="Download Your Data"
-                        description="Get a copy of your personal information, transaction history, and more."
-                        buttonText="Request Data"
+                        description="Request a copy of your personal data, including profile information and transaction history."
+                        buttonText="Request Download"
                         onAction={handleDownload}
                         isLoading={downloading}
                     />
                     <DataActionButton
-                        icon={<XCircleIcon className="w-6 h-6"/>}
+                        icon={<XCircleIcon className="w-6 h-6" />}
                         title="Delete Your Account"
-                        description="Permanently delete your account and all associated data. This action is irreversible."
+                        description="Request the permanent deletion of your account and all associated data. This action cannot be undone."
                         buttonText="Request Deletion"
                         onAction={handleDelete}
                         isLoading={deleting}
                     />
                 </div>
             </div>
-
         </div>
     );
 };

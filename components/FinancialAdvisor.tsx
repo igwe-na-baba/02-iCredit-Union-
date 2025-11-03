@@ -1,12 +1,14 @@
 import React from 'react';
 import { AdvisorResponse, View } from '../types';
+// FIX: Add missing icons
 import { SpinnerIcon, SparklesIcon, InfoIcon, LightBulbIcon, TrendingUpIcon } from './Icons';
 
 interface FinancialAdvisorProps {
     analysis: AdvisorResponse | null;
     isAnalyzing: boolean;
     analysisError: boolean;
-    runAnalysis: () => void;
+    // FIX: Changed prop name to match what is passed from App.tsx
+    runFinancialAnalysis: () => void;
     setActiveView: (view: View) => void;
 }
 
@@ -42,7 +44,7 @@ const FinancialScoreGauge: React.FC<{ score: number }> = ({ score }) => {
 };
 
 
-export const FinancialAdvisor: React.FC<FinancialAdvisorProps> = ({ analysis, isAnalyzing, analysisError, runAnalysis, setActiveView }) => {
+export const FinancialAdvisor: React.FC<FinancialAdvisorProps> = ({ analysis, isAnalyzing, analysisError, runFinancialAnalysis, setActiveView }) => {
 
     const renderContent = () => {
         if (isAnalyzing) {
@@ -61,7 +63,7 @@ export const FinancialAdvisor: React.FC<FinancialAdvisorProps> = ({ analysis, is
                     <InfoIcon className="w-12 h-12 text-yellow-500 mx-auto" />
                     <h3 className="mt-4 text-xl font-bold text-yellow-800">Analysis Failed</h3>
                     <p className="text-yellow-700 mt-2">We're sorry, but our AI advisor is currently unavailable. Please try again later.</p>
-                     <button onClick={runAnalysis} className="mt-6 px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg shadow-md">
+                     <button onClick={runFinancialAnalysis} className="mt-6 px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg shadow-md">
                         Retry Analysis
                     </button>
                 </div>
@@ -118,7 +120,7 @@ export const FinancialAdvisor: React.FC<FinancialAdvisorProps> = ({ analysis, is
                 <SparklesIcon className="w-16 h-16 text-primary mx-auto" />
                 <h3 className="mt-4 text-2xl font-bold text-slate-800">Unlock Your Financial Potential</h3>
                 <p className="text-slate-600 mt-2 max-w-lg mx-auto">Get a personalized financial wellness report powered by AI. We'll analyze your spending, saving, and investment habits to provide actionable insights and recommendations.</p>
-                <button onClick={runAnalysis} className="mt-8 px-8 py-3 text-lg font-bold text-white bg-primary rounded-lg shadow-lg hover:shadow-xl transition-transform hover:scale-105">
+                <button onClick={runFinancialAnalysis} className="mt-8 px-8 py-3 text-lg font-bold text-white bg-primary rounded-lg shadow-lg hover:shadow-xl transition-transform hover:scale-105">
                     Analyze My Finances
                 </button>
             </div>

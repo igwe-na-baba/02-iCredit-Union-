@@ -3,6 +3,7 @@ import { Account, AccountType, Transaction, VerificationLevel } from '../types';
 import { getAccountPerks } from '../services/geminiService';
 // FIX: Renamed ApexBankLogo to ICreditUnionLogo to fix the import error.
 // FIX: Imported the missing `BankIcon` component.
+// FIX: Add missing icons
 import { SpinnerIcon, InfoIcon, ShieldCheckIcon, CreditCardIcon, PiggyBankIcon, BuildingOfficeIcon, BankIcon, DepositIcon, CheckCircleIcon, PencilIcon, getBankIcon, ICreditUnionLogo, ClockIcon, ClipboardDocumentIcon, GlobeAmericasIcon } from './Icons';
 import { USER_PROFILE } from '../constants';
 

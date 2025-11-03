@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import {
     SpinnerIcon,
@@ -9,7 +10,9 @@ import {
     CheckCircleIcon,
 // FIX: Renamed ApexBankLogo to ICreditUnionLogo to fix the import error.
     ICreditUnionLogo,
-    DevicePhoneMobileIcon
+    DevicePhoneMobileIcon,
+    CameraIcon,
+    ArrowRightIcon,
 } from './Icons';
 import { ALL_COUNTRIES } from '../constants';
 import { Country } from '../types';
@@ -135,7 +138,7 @@ export const AccountCreationModal: React.FC<AccountCreationModalProps> = ({ onCl
                 if (phoneError) newErrors.phone = phoneError;
                 break;
             case 1: // Address
-                if (formData.address.trim().length < 5) newErrors.address = 'Please enter a valid address.';
+                if (formData.address.trim().length < 5) newErrors.address = 'Please enter a valid street address.';
                 if (formData.city.trim().length < 2) newErrors.city = 'Please enter a valid city.';
                 if (formData.state.trim().length < 2) newErrors.state = 'Please enter a valid state/province.';
                 if (formData.postalCode.trim().length < 3) newErrors.postalCode = 'Please enter a valid postal code.';

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TravelPlan, TravelPlanStatus, Country } from '../types';
+// FIX: Add missing icons
 import { CalendarDaysIcon, GlobeAmericasIcon, VerifiedBadgeIcon, PlusCircleIcon, MapPinIcon } from './Icons';
 import { CountrySelector } from './CountrySelector';
 

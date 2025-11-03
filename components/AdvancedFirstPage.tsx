@@ -78,13 +78,17 @@ export const AdvancedFirstPage: React.FC<AdvancedFirstPageProps> = ({ onComplete
 
     return (
         <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center overflow-hidden relative">
-            {/* Background Image Layer */}
+            {/* Background Video Layer */}
             <div ref={bgRef} className="absolute inset-[-20px] z-0 transition-transform duration-300 ease-out">
-                <img
-                    src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=2845&auto=format&fit=crop"
-                    alt="Abstract financial art background"
-                    className="absolute inset-0 w-full h-full object-cover animate-ken-burns"
-                />
+                 <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                >
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-a-futuristic-business-environment-with-holograms-44812-large.mp4" type="video/mp4" />
+                </video>
             </div>
             
             {/* Animated Grid Overlay */}
