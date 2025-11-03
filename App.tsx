@@ -10,7 +10,7 @@ import { INITIAL_RECIPIENTS, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_CARD_T
 import * as Icons from './components/Icons';
 import { Welcome } from './components/Welcome';
 import { ActivityLog } from './components/ActivityLog';
-import { Security } from './components/Settings';
+import { Security } from './components/Security';
 import { CardManagement } from './components/CardManagement';
 import { Loans } from './components/Loans';
 import { Support } from './components/Support';
@@ -77,6 +77,8 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { LanguageSelector } from './components/LanguageSelector';
 import { AdvancedFirstPage } from './components/AdvancedFirstPage';
 import { WireTransfer } from './components/WireTransfer';
+import { About } from './components/About';
+import { Contact } from './components/Contact';
 
 
 type AuthStatus = 'intro' | 'initializing' | 'auth' | 'loggedIn' | 'locked' | 'creatingAccount';
@@ -806,6 +808,7 @@ function AppContent() {
         linkedServices={linkedServices}
         onLinkService={onLinkService}
     />,
+    // FIX: Corrected the prop name from `runAnalysis` to `runFinancialAnalysis` to match the function defined in the component.
     advisor: <FinancialAdvisor analysis={financialAnalysis} isAnalyzing={isAnalyzing} analysisError={analysisError} runAnalysis={runFinancialAnalysis} setActiveView={setActiveView} />,
     invest: <Investments />,
     atmLocator: <AtmLocator />,
@@ -826,6 +829,8 @@ function AppContent() {
     privacy: <PrivacyCenter settings={privacySettings} onUpdateSettings={(update) => setPrivacySettings(prev => ({...prev, ...update}))}/>,
     send: <div />, // Placeholder, handled by modal
     wire: <div />, // Placeholder, handled by modal
+    about: <About />,
+    contact: <Contact setActiveView={setActiveView} />,
   };
 
   const currentView = viewMap[activeView];
@@ -890,6 +895,7 @@ function AppContent() {
               onNotificationClick={(view) => setActiveView(view)}
               userProfile={userProfile}
               onOpenLanguageSelector={() => setIsLanguageSelectorOpen(true)}
+              onOpenSendMoneyFlow={onOpenSendMoneyFlow}
             />
             <main className="p-4 sm:p-6 lg:p-8">
               {currentView}
@@ -898,7 +904,7 @@ function AppContent() {
         </div>
         <Footer 
             setActiveView={setActiveView} 
-            onContactSupportClick={() => setIsContactSupportOpen(true)}
+            onContactSupportClick={() => setActiveView('contact')}
             onOpenSendMoneyFlow={onOpenSendMoneyFlow}
         />
       </div>

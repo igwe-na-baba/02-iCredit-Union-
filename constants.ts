@@ -1,4 +1,4 @@
-import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard } from './types';
+import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard, FaqItem, LeadershipProfile } from './types';
 
 export const ALL_COUNTRIES: Country[] = [
     { code: 'US', name: 'United States', currency: 'USD', symbol: '$' },
@@ -899,3 +899,29 @@ export const BANK_ACCOUNT_CONFIG: { [countryCode: string]: any } = {
     field2: { name: 'swiftBic', label: 'SWIFT / BIC / Other Code', placeholder: 'Enter relevant bank code', maxLength: 20, format: (v: string) => v.toUpperCase(), validate: (v: string) => v.length > 3 ? null : 'Code is too short.' },
   }
 };
+
+export const FAQS: FaqItem[] = [
+    {
+        question: "How long do international transfers take?",
+        answer: "Standard transfers typically arrive within 2-3 business days. Express transfers usually arrive within 24 hours. Delivery times can vary based on the recipient's country and bank."
+    },
+    {
+        question: "What are the fees for sending money?",
+        answer: `We offer transparent pricing. For most transfers, there's a ${STANDARD_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} fee for standard delivery and a ${EXPRESS_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} fee for express delivery. Wire transfers have separate fees.`
+    },
+    {
+        question: "How do I increase my transfer limits?",
+        answer: "You can increase your limits by completing identity verification in the Security Center. Higher verification levels unlock higher transaction limits."
+    },
+    {
+        question: "Is my money safe with iCredit Union®?",
+        answer: "Absolutely. We use industry-leading security measures, including end-to-end encryption, multi-factor authentication, and proactive fraud monitoring to protect your account and your money."
+    },
+];
+
+export const LEADERSHIP_TEAM: LeadershipProfile[] = [
+    { name: "Eleanor Vance", title: "Chief Executive Officer", imageUrl: "https://i.imgur.com/3Y2mmKx.jpeg", bio: "Eleanor drives the vision of iCredit Union, focusing on global financial inclusion and technological innovation." },
+    { name: "Marcus Thorne", title: "Chief Technology Officer", imageUrl: "https://i.imgur.com/8LDBx42.jpeg", bio: "Marcus leads our engineering teams, building the secure and scalable infrastructure that powers our platform." },
+    { name: "Isabella Rossi", title: "Chief Financial Officer", imageUrl: "https://i.imgur.com/dAnMcY9.jpeg", bio: "Isabella oversees the financial health and strategic investments of the company, ensuring sustainable growth." },
+    { name: "Julian Chen", title: "Chief Operating Officer", imageUrl: "https://i.imgur.com/h5I5T2P.jpeg", bio: "Julian manages global operations, ensuring a seamless and efficient experience for all our customers." },
+];

@@ -154,7 +154,8 @@ const SpendingSummary: React.FC<{ transactions: CardTransaction[] }> = ({ transa
         return { totalSpent: total, byCategory: byCat };
     }, [transactions]);
     
-    // FIX: Explicitly cast Object.values to number[] and use 0 as a default for Math.max to handle empty arrays.
+    // FIX: Explicitly cast the result of Object.values to number[] to resolve a TypeScript
+    // type inference issue where it was being treated as unknown[].
     const maxSpending = Math.max(0, ...Object.values(byCategory) as number[]);
 
     return (
@@ -170,8 +171,7 @@ const SpendingSummary: React.FC<{ transactions: CardTransaction[] }> = ({ transa
 
                     return (
                         <div key={cat} className="flex items-center gap-3 text-sm">
-                            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-200 shadow-digital text-slate-600 flex-shrink-0">{/* FIX: Render the CategoryIcon as a variable, not a component, because getCategoryIcon returns a JSX element. */}
-{CategoryIcon}</div>
+                            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-200 shadow-digital text-slate-600 flex-shrink-0">{CategoryIcon}</div>
                             <div className="flex-grow">
                                 <div className="flex justify-between font-semibold">
                                     <span className="text-slate-700">{cat}</span>

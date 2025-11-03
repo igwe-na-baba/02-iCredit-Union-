@@ -1,7 +1,7 @@
 // FIX: Import React to make React types like `ComponentType` available in this file.
 import React from 'react';
 
-export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire';
+export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire' | 'about' | 'contact';
 
 export type BalanceDisplayMode = 'global' | 'domestic';
 
@@ -555,4 +555,16 @@ export interface AirtimePurchase {
 export interface SavedSession {
   view: View;
   timestamp: number;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface LeadershipProfile {
+  name: string;
+  title: string;
+  imageUrl: string;
+  bio: string;
 }

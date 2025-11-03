@@ -23,7 +23,7 @@ interface RecipientsProps {
 }
 
 const DeliveryMethod: React.FC<{ icon: React.ReactNode; label: string; enabled: boolean }> = ({ icon, label, enabled }) => (
-    <div className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${enabled ? 'bg-slate-200 shadow-digital' : 'bg-slate-200 opacity-50'}`}>
+    <div className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${enabled ? 'bg-white/50' : 'bg-white/30 opacity-60'}`}>
         <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${enabled ? 'bg-green-100 text-green-600' : 'bg-slate-300 text-slate-500'}`}>
             {icon}
         </div>
@@ -51,7 +51,7 @@ const AccountDetail: React.FC<{ label: string; value: string }> = ({ label, valu
             </div>
             <button
                 onClick={handleCopy}
-                className={`flex items-center space-x-2 px-3 py-1.5 text-sm font-medium rounded-lg shadow-digital active:shadow-digital-inset transition-all duration-200 ${copied ? 'text-green-600' : 'text-primary'}`}
+                className={`flex items-center space-x-2 px-3 py-1.5 text-sm font-medium rounded-lg shadow-sm active:shadow-inner transition-all duration-200 ${copied ? 'text-green-600 bg-green-100' : 'text-primary bg-white/80 hover:bg-white'}`}
             >
                 {copied ? (
                     <>
@@ -78,10 +78,10 @@ const RecipientCard: React.FC<{ recipient: Recipient; onEdit: (recipient: Recipi
     const InlineBankLogo = !isServiceRecipient ? getBankIcon(recipient.bankName) : null;
 
     return (
-        <div className="bg-slate-200 rounded-2xl shadow-digital transition-shadow duration-300">
+        <div className="bg-slate-200/70 backdrop-blur-sm rounded-2xl shadow-md transition-shadow duration-300">
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-4 flex-grow cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-                    <div className="w-12 h-12 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center font-bold text-slate-600 text-xl shadow-digital-inset p-1">
+                    <div className="w-12 h-12 rounded-full bg-white flex-shrink-0 flex items-center justify-center font-bold text-slate-600 text-xl shadow-inner p-1">
                         <Icon className="w-full h-full object-contain" />
                     </div>
                     <div>
@@ -105,21 +105,21 @@ const RecipientCard: React.FC<{ recipient: Recipient; onEdit: (recipient: Recipi
                         <img src={`https://flagcdn.com/w20/${recipient.country.code.toLowerCase()}.png`} alt={recipient.country.name} className="w-5 rounded-sm shadow-sm" />
                         <span className="text-sm text-slate-600 hidden sm:block">{recipient.country.name}</span>
                     </div>
-                    <button onClick={() => onEdit(recipient)} className="p-2 text-slate-500 hover:text-primary rounded-full shadow-digital active:shadow-digital-inset transition-all" aria-label={`Edit ${recipient.fullName}`}>
+                    <button onClick={() => onEdit(recipient)} className="p-2 text-slate-500 hover:text-primary rounded-full hover:bg-slate-300/50 transition-all" aria-label={`Edit ${recipient.fullName}`}>
                         <PencilIcon className="w-5 h-5" />
                     </button>
-                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 text-slate-500" aria-expanded={isExpanded} aria-label="Toggle details">
+                    <button onClick={() => setIsExpanded(!isExpanded)} className="p-2 text-slate-500 hover:bg-slate-300/50 rounded-full" aria-expanded={isExpanded} aria-label="Toggle details">
                       <ChevronDownIcon className={`w-6 h-6 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
             </div>
 
             {isExpanded && (
-                <div className="border-t border-slate-300 p-4 animate-fade-in-down">
+                <div className="border-t border-slate-300 p-4 animate-fade-in-down bg-slate-200/50">
                     {isServiceRecipient ? (
                          <div>
                             <h4 className="font-semibold text-slate-700 mb-3 text-sm">Service Details</h4>
-                            <div className="space-y-4 p-4 rounded-lg shadow-digital-inset">
+                            <div className="space-y-4 p-4 bg-white/50 rounded-lg shadow-inner">
                                 <AccountDetail label={`${serviceName} Identifier`} value={realDetails.accountNumber} />
                             </div>
                         </div>
@@ -139,7 +139,7 @@ const RecipientCard: React.FC<{ recipient: Recipient; onEdit: (recipient: Recipi
                             <div className="md:col-span-2 space-y-4">
                                 <div>
                                     <h4 className="font-semibold text-slate-700 mb-3 text-sm">Account Details</h4>
-                                    <div className="space-y-4 p-4 rounded-lg shadow-digital-inset">
+                                    <div className="space-y-4 p-4 bg-white/50 rounded-lg shadow-inner">
                                         <AccountDetail label="Account Number / IBAN" value={realDetails.accountNumber} />
                                         <AccountDetail label="SWIFT / BIC / Routing" value={realDetails.swiftBic} />
                                     </div>
@@ -147,7 +147,7 @@ const RecipientCard: React.FC<{ recipient: Recipient; onEdit: (recipient: Recipi
                                 {(recipient.streetAddress || recipient.phone) && (
                                     <div>
                                         <h4 className="font-semibold text-slate-700 mb-3 text-sm">Contact Information</h4>
-                                        <div className="not-italic p-4 rounded-lg shadow-digital-inset text-slate-700 text-sm leading-relaxed space-y-2">
+                                        <div className="not-italic p-4 bg-white/50 rounded-lg shadow-inner text-slate-700 text-sm leading-relaxed space-y-2">
                                             {recipient.phone && (
                                                 <div>
                                                     <strong>Phone:</strong> {recipient.phone}

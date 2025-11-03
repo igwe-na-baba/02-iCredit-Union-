@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Country, Recipient } from '../types';
 import { ALL_COUNTRIES, BANKS_BY_COUNTRY, BANK_ACCOUNT_CONFIG } from '../constants';

@@ -18,9 +18,10 @@ interface HeaderProps {
   onNotificationClick: (view: View) => void;
   userProfile: UserProfile;
   onOpenLanguageSelector: () => void;
+  onOpenSendMoneyFlow: (initialTab?: 'send' | 'split' | 'deposit') => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMenuOpen, activeView, setActiveView, onLogout, notifications, onMarkNotificationsAsRead, onNotificationClick, userProfile, onOpenLanguageSelector }) => {
+export const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMenuOpen, activeView, setActiveView, onLogout, notifications, onMarkNotificationsAsRead, onNotificationClick, userProfile, onOpenLanguageSelector, onOpenSendMoneyFlow }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
@@ -107,6 +108,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMenuOpen, active
         activeView={activeView}
         setActiveView={setActiveView}
         userProfile={userProfile}
+        onOpenSendMoneyFlow={onOpenSendMoneyFlow}
       />
     </>
   );

@@ -5,7 +5,9 @@ import {
     ShoppingBagIcon, MapPinIcon, XIcon, ICreditUnionLogo, CubeTransparentIcon,
     ClipboardDocumentIcon, AirplaneTicketIcon, WrenchScrewdriverIcon, PuzzlePieceIcon, SparklesIcon,
     TrendingUpIcon, PlusCircleIcon, MapIcon, LightningBoltIcon, QrCodeIcon, ShieldCheckIcon,
-    GlobeAmericasIcon
+    GlobeAmericasIcon,
+    BuildingOfficeIcon,
+    ChatBubbleLeftRightIcon
 } from './Icons';
 import { View, UserProfile } from '../types';
 
@@ -15,6 +17,7 @@ interface MegaMenuProps {
   activeView: View;
   setActiveView: (view: View) => void;
   userProfile: UserProfile;
+  onOpenSendMoneyFlow: (initialTab?: 'send' | 'split' | 'deposit') => void;
 }
 
 const menuConfig: {
@@ -75,10 +78,17 @@ const menuConfig: {
             { view: 'privacy', label: 'Privacy Center', description: 'Control your data & settings.', icon: ShieldCheckIcon },
             { view: 'platform', label: 'Platform', description: "Customize your experience.", icon: CubeTransparentIcon },
         ]
+    },
+    {
+        category: 'Company',
+        items: [
+            { view: 'about', label: 'About Us', description: 'Our mission, team, and values.', icon: BuildingOfficeIcon },
+            { view: 'contact', label: 'Contact Us', description: 'Get in touch with our team.', icon: ChatBubbleLeftRightIcon },
+        ]
     }
 ];
 
-export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, activeView, setActiveView, userProfile }) => {
+export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, activeView, setActiveView, userProfile, onOpenSendMoneyFlow }) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -92,7 +102,11 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose, activeView,
     }, [onClose]);
 
     const handleItemClick = (view: View) => {
-        setActiveView(view);
+        if (view === 'send') {
+            onOpenSendMoneyFlow('send');
+        } else {
+            setActiveView(view);
+        }
         onClose();
     };
 

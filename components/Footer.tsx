@@ -74,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveView, onContactSupportC
                     <div>
                         <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Company</h3>
                         <ul className="mt-4 space-y-2 text-sm">
-                            <FooterLink onClick={() => handleExternalLink('/#about')}>About Us</FooterLink>
+                            <FooterLink onClick={() => setActiveView('about')}>About Us</FooterLink>
                             <FooterLink onClick={() => setActiveView('security')}>Security Center</FooterLink>
                             <FooterLink onClick={() => handleExternalLink('/#press')}>Press</FooterLink>
                             <FooterLink onClick={onContactSupportClick}>Contact Support</FooterLink>
