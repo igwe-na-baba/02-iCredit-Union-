@@ -1,4 +1,4 @@
-import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard, FaqItem, LeadershipProfile } from './types';
+import { Country, Recipient, Transaction, TransactionStatus, Card, CardTransaction, AdvancedTransferLimits, Account, AccountType, CryptoAsset, CryptoHolding, SubscriptionService, SubscriptionServiceType, AppleCardDetails, AppleCardTransaction, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, Task, Airport, FlightBooking, UtilityBiller, UtilityBill, UtilityType, AtmLocation, AirtimeProvider, AirtimePurchase, PushNotificationSettings, VirtualCard, FaqItem, LeadershipProfile, View } from './types';
 
 export const ALL_COUNTRIES: Country[] = [
     { code: 'US', name: 'United States', currency: 'USD', symbol: '$' },
@@ -925,3 +925,99 @@ export const LEADERSHIP_TEAM: LeadershipProfile[] = [
     { name: "Isabella Rossi", title: "Chief Financial Officer", imageUrl: "https://i.imgur.com/dAnMcY9.jpeg", bio: "Isabella oversees the financial health and strategic investments of the company, ensuring sustainable growth." },
     { name: "Julian Chen", title: "Chief Operating Officer", imageUrl: "https://i.imgur.com/h5I5T2P.jpeg", bio: "Julian manages global operations, ensuring a seamless and efficient experience for all our customers." },
 ];
+
+export const LEGAL_CONTENT = {
+    TERMS_OF_USE: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">1. Acceptance of Terms</h3>
+        <p style="margin-bottom: 1rem;">By accessing and using iCredit Union® services, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">2. Service Description</h3>
+        <p style="margin-bottom: 1rem;">iCredit Union® provides users with access to a rich collection of resources, including various communications tools, financial services, and personalized content. You also understand and agree that the service may include certain communications from iCredit Union®, such as service announcements and administrative messages, and that these communications are considered part of iCredit Union® membership.</p>
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">3. User Conduct</h3>
+        <p>You are responsible for all activity occurring on your account and shall abide by all applicable local, state, national and foreign laws, treaties and regulations in connection with your use of the Service, including those related to data privacy, international communications and the transmission of technical or personal data.</p>
+    `,
+    ONLINE_BANKING_GUARANTEE: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">Our Commitment to Your Security</h3>
+        <p style="margin-bottom: 1rem;">iCredit Union® is committed to providing a safe and secure online banking environment. Our Online Banking Guarantee provides 100% reimbursement for any funds lost due to unauthorized online transactions on your personal accounts, provided you have met your security responsibilities.</p>
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">Your Responsibilities</h3>
+        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
+            <li>Keep your password, PIN, and security codes confidential.</li>
+            <li>Use a unique password for your iCredit Union® account.</li>
+            <li>Enable Two-Factor Authentication (2FA).</li>
+            <li>Review your statements and transaction history regularly.</li>
+            <li>Report any suspicious activity to us immediately.</li>
+        </ul>
+        <p>Failure to meet these responsibilities may affect your eligibility for reimbursement under this guarantee.</p>
+    `,
+    COOKIE_POLICY: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">What Are Cookies?</h3>
+        <p style="margin-bottom: 1rem;">Cookies are small text files stored on your device when you visit websites. They are used to remember your preferences, help you navigate between pages efficiently, and make your experience more secure and personalized.</p>
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">How We Use Cookies</h3>
+        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
+            <li><strong>Essential Cookies:</strong> Necessary for the website to function, such as maintaining your login session.</li>
+            <li><strong>Performance Cookies:</strong> Help us understand how you use our app, so we can improve it.</li>
+            <li><strong>Functional Cookies:</strong> Remember your preferences, like language or theme settings.</li>
+            <li><strong>Advertising Cookies:</strong> Used to deliver relevant ads to you. You can control these in the Privacy Center.</li>
+        </ul>
+        <p>You can manage your cookie preferences at any time through your browser settings or within our Privacy Center.</p>
+    `,
+    CAREERS_INFO: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">Join Our Team</h3>
+        <p style="margin-bottom: 1rem;">We're building the future of finance, and we're looking for passionate, innovative people to join us on our mission. At iCredit Union®, you'll have the opportunity to work on challenging projects that have a real-world impact on millions of people globally.</p>
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">Current Openings (Simulated)</h3>
+        <ul style="list-style-type: disc; margin-left: 2rem; margin-bottom: 1rem;">
+            <li>Senior Frontend Engineer (React/TypeScript)</li>
+            <li>Lead Backend Engineer (Go/PostgreSQL)</li>
+            <li>Mobile Security Specialist (iOS/Android)</li>
+            <li>Product Manager, Global Payments</li>
+            <li>Data Scientist, Fraud Detection</li>
+        </ul>
+        <p>To apply, please send your resume and a cover letter to <a href="mailto:careers@icreditunion.com" style="color: blue;">careers@icreditunion.com</a>. We look forward to hearing from you!</p>
+    `,
+    PRESS_ROOM_INFO: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">iCredit Union® in the News</h3>
+        <p style="margin-bottom: 1rem;">Welcome to the iCredit Union® press room. For media inquiries, please contact <a href="mailto:press@icreditunion.com" style="color: blue;">press@icreditunion.com</a>.</p>
+        <div style="border-bottom: 1px solid #ccc; padding-bottom: 1rem; margin-bottom: 1rem;">
+            <p style="font-size: 0.9rem; color: #666;">July 15, 2024</p>
+            <h4 style="font-weight: bold; margin: 0.5rem 0;">iCredit Union® Wins "Best Digital Bank 2024" from Global Finance Magazine</h4>
+            <p>iCredit Union® was recognized for its innovative approach to international transfers and its commitment to user security.</p>
+        </div>
+        <div>
+            <p style="font-size: 0.9rem; color: #666;">June 28, 2024</p>
+            <h4 style="font-weight: bold; margin: 0.5rem 0;">iCredit Union® Expands Services to 10 New Countries in APAC Region</h4>
+            <p>The expansion marks a significant milestone in the company's mission to provide accessible financial services worldwide.</p>
+        </div>
+    `,
+    SITE_MAP_CONTENT: `
+        <h3 style="font-weight: bold; margin-bottom: 1rem;">Site Map</h3>
+        <p style="margin-bottom: 1rem;">Navigate to any section of the iCredit Union® platform.</p>
+        <ul style="list-style-type: disc; margin-left: 2rem; columns: 2;">
+            <li>Dashboard</li>
+            <li>Accounts</li>
+            <li>Send Money</li>
+            <li>Wire Transfer</li>
+            <li>Cards</li>
+            <li>History</li>
+            <li>Recipients</li>
+            <li>Tasks</li>
+            <li>Integrations</li>
+            <li>Invest</li>
+            <li>Crypto</li>
+            <li>Loans</li>
+            <li>Insurance</li>
+            <li>Quickteller Hub</li>
+            <li>QR Scanner</li>
+            <li>Book Flights</li>
+            <li>Pay Utilities</li>
+            <li>Subscriptions</li>
+            <li>Travel Check-In</li>
+            <li>ATM Locator</li>
+            <li>AI Advisor</li>
+            <li>Support</li>
+            <li>Security</li>
+            <li>Privacy Center</li>
+            <li>Platform</li>
+            <li>About Us</li>
+            <li>Contact Us</li>
+        </ul>
+    `,
+};

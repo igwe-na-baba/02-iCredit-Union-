@@ -6,7 +6,7 @@ import { SendMoneyFlow } from './components/SendMoneyFlow';
 import { Recipients } from './components/Recipients';
 import { Transaction, Recipient, TransactionStatus, Card, Notification, NotificationType, AdvancedTransferLimits, Country, LoanApplication, LoanApplicationStatus, Account, VerificationLevel, CryptoHolding, CryptoAsset, SubscriptionService, AppleCardDetails, AppleCardTransaction, SpendingLimit, SpendingCategory, TravelPlan, TravelPlanStatus, SecuritySettings, TrustedDevice, UserProfile, PlatformSettings, PlatformTheme, View, Task, FlightBooking, UtilityBill, UtilityBiller, AdvisorResponse, BalanceDisplayMode, AccountType, AirtimePurchase, PushNotification, PushNotificationSettings, SavedSession, VirtualCard } from './types';
 // FIX: Added NEW_USER_ACCOUNTS_TEMPLATE to the import from constants.ts to resolve a reference error.
-import { INITIAL_RECIPIENTS, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_CARD_TRANSACTIONS, INITIAL_ADVANCED_TRANSFER_LIMITS, SELF_RECIPIENT, INITIAL_ACCOUNTS, getInitialCryptoAssets, INITIAL_CRYPTO_HOLDINGS, CRYPTO_TRADE_FEE_PERCENT, INITIAL_SUBSCRIPTIONS, INITIAL_APPLE_CARD_DETAILS, INITIAL_APPLE_CARD_TRANSACTIONS, INITIAL_TRAVEL_PLANS, INITIAL_SECURITY_SETTINGS, INITIAL_TRUSTED_DEVICES, USER_PROFILE, INITIAL_PLATFORM_SETTINGS, THEME_COLORS, INITIAL_TASKS, INITIAL_FLIGHT_BOOKINGS, INITIAL_UTILITY_BILLS, getUtilityBillers, getAirtimeProviders, INITIAL_AIRTIME_PURCHASES, INITIAL_PUSH_SETTINGS, EXCHANGE_RATES, NEW_USER_PROFILE_TEMPLATE, NEW_USER_ACCOUNTS_TEMPLATE, INITIAL_VIRTUAL_CARDS, DOMESTIC_WIRE_FEE, INTERNATIONAL_WIRE_FEE } from './constants';
+import { INITIAL_RECIPIENTS, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_CARD_TRANSACTIONS, INITIAL_ADVANCED_TRANSFER_LIMITS, SELF_RECIPIENT, INITIAL_ACCOUNTS, getInitialCryptoAssets, INITIAL_CRYPTO_HOLDINGS, CRYPTO_TRADE_FEE_PERCENT, INITIAL_SUBSCRIPTIONS, INITIAL_APPLE_CARD_DETAILS, INITIAL_APPLE_CARD_TRANSACTIONS, INITIAL_TRAVEL_PLANS, INITIAL_SECURITY_SETTINGS, INITIAL_TRUSTED_DEVICES, USER_PROFILE, INITIAL_PLATFORM_SETTINGS, THEME_COLORS, INITIAL_TASKS, INITIAL_FLIGHT_BOOKINGS, INITIAL_UTILITY_BILLS, getUtilityBillers, getAirtimeProviders, INITIAL_AIRTIME_PURCHASES, INITIAL_PUSH_SETTINGS, EXCHANGE_RATES, NEW_USER_PROFILE_TEMPLATE, NEW_USER_ACCOUNTS_TEMPLATE, INITIAL_VIRTUAL_CARDS, DOMESTIC_WIRE_FEE, INTERNATIONAL_WIRE_FEE, LEGAL_CONTENT } from './constants';
 import * as Icons from './components/Icons';
 import { Welcome } from './components/Welcome';
 import { ActivityLog } from './components/ActivityLog';
@@ -79,6 +79,7 @@ import { AdvancedFirstPage } from './components/AdvancedFirstPage';
 import { WireTransfer } from './components/WireTransfer';
 import { About } from './components/About';
 import { Contact } from './components/Contact';
+import { LegalModal } from './components/LegalModal';
 
 
 type AuthStatus = 'intro' | 'initializing' | 'auth' | 'loggedIn' | 'locked' | 'creatingAccount';
@@ -144,6 +145,7 @@ function AppContent() {
   const [isContactSupportOpen, setIsContactSupportOpen] = useState(false);
   const [privacySettings, setPrivacySettings] = useState({ ads: true, sharing: true, email: { transactions: true, security: true, promotions: true }, sms: { transactions: true, security: true, promotions: false } });
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
+  const [legalModalContent, setLegalModalContent] = useState<{ title: string; content: string } | null>(null);
 
   const [pushNotificationSettings, setPushNotificationSettings] = useState<PushNotificationSettings>(INITIAL_PUSH_SETTINGS);
   const [linkedServices, setLinkedServices] = useState<Record<string, string>>({});
@@ -151,6 +153,10 @@ function AppContent() {
 
   const inactivityTimer = useRef<number | undefined>();
   const inactivityWarningTimer = useRef<number | undefined>();
+
+  const openLegalModal = (title: string, content: string) => {
+    setLegalModalContent({ title, content });
+  };
 
   const addNotification = useCallback((type: NotificationType, title: string, message: string, linkTo?: View) => {
     const newNotification: Notification = {
@@ -903,9 +909,9 @@ function AppContent() {
           </div>
         </div>
         <Footer 
-            setActiveView={setActiveView} 
-            onContactSupportClick={() => setActiveView('contact')}
+            setActiveView={setActiveView}
             onOpenSendMoneyFlow={onOpenSendMoneyFlow}
+            openLegalModal={openLegalModal}
         />
       </div>
       <BankingChat />
@@ -915,6 +921,13 @@ function AppContent() {
       {isResumeModalOpen && savedSession && <ResumeSessionModal session={savedSession} onResume={handleResumeSession} onStartFresh={handleStartFresh} />}
       {isContactSupportOpen && <ContactSupportModal onClose={() => setIsContactSupportOpen(false)} onSubmit={onContactSupport} transactions={transactions} />}
       {isLanguageSelectorOpen && <LanguageSelector onClose={() => setIsLanguageSelectorOpen(false)} />}
+      {legalModalContent && (
+        <LegalModal 
+            title={legalModalContent.title} 
+            content={legalModalContent.content} 
+            onClose={() => setLegalModalContent(null)} 
+        />
+      )}
     </>
   );
 }

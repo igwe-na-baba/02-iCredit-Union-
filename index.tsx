@@ -12,6 +12,7 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
+    {/* FIX: Wrapped App component within ErrorBoundary to provide the required 'children' prop and fix the render error. */}
     <ErrorBoundary>
       <App />
     </ErrorBoundary>

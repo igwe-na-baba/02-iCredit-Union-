@@ -6,11 +6,12 @@ import {
     LinkedInIcon,
     InstagramIcon,
 } from './Icons';
+import { LEGAL_CONTENT } from '../constants';
 
 interface FooterProps {
     setActiveView: (view: View) => void;
-    onContactSupportClick: () => void;
     onOpenSendMoneyFlow: (initialTab?: 'send' | 'split' | 'deposit') => void;
+    openLegalModal: (title: string, content: string) => void;
 }
 
 const FooterLink: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => (
@@ -21,11 +22,7 @@ const FooterLink: React.FC<{ onClick: () => void; children: React.ReactNode }> =
     </li>
 );
 
-export const Footer: React.FC<FooterProps> = ({ setActiveView, onContactSupportClick, onOpenSendMoneyFlow }) => {
-    
-    const handleExternalLink = (url: string) => {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
+export const Footer: React.FC<FooterProps> = ({ setActiveView, onOpenSendMoneyFlow, openLegalModal }) => {
 
     return (
         <footer className="bg-slate-900 text-slate-400">
@@ -63,29 +60,30 @@ export const Footer: React.FC<FooterProps> = ({ setActiveView, onContactSupportC
                         </p>
                     </div>
                     <div>
-                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Quick Links</h3>
-                        <ul className="mt-4 space-y-2 text-sm">
-                            <FooterLink onClick={() => setActiveView('dashboard')}>Dashboard</FooterLink>
-                            <FooterLink onClick={() => onOpenSendMoneyFlow('send')}>Send Money</FooterLink>
-                            <FooterLink onClick={() => setActiveView('cards')}>Cards</FooterLink>
-                            <FooterLink onClick={() => setActiveView('history')}>History</FooterLink>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Company</h3>
+                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">About iCU</h3>
                         <ul className="mt-4 space-y-2 text-sm">
                             <FooterLink onClick={() => setActiveView('about')}>About Us</FooterLink>
-                            <FooterLink onClick={() => setActiveView('security')}>Security Center</FooterLink>
-                            <FooterLink onClick={() => handleExternalLink('/#press')}>Press</FooterLink>
-                            <FooterLink onClick={onContactSupportClick}>Contact Support</FooterLink>
+                            <FooterLink onClick={() => openLegalModal('Careers at iCredit Union®', LEGAL_CONTENT.CAREERS_INFO)}>Careers</FooterLink>
+                            <FooterLink onClick={() => openLegalModal('Press Room', LEGAL_CONTENT.PRESS_ROOM_INFO)}>Press</FooterLink>
+                            <FooterLink onClick={() => openLegalModal('Site Map', LEGAL_CONTENT.SITE_MAP_CONTENT)}>Site Map</FooterLink>
                         </ul>
                     </div>
                     <div>
-                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Legal</h3>
+                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Help & Support</h3>
                         <ul className="mt-4 space-y-2 text-sm">
-                            <FooterLink onClick={() => handleExternalLink('/#terms')}>Terms of Service</FooterLink>
+                            <FooterLink onClick={() => setActiveView('contact')}>Contact Us</FooterLink>
+                            <FooterLink onClick={() => setActiveView('support')}>Help Center</FooterLink>
+                            <FooterLink onClick={() => setActiveView('atmLocator')}>ATM Locator</FooterLink>
+                            <FooterLink onClick={() => setActiveView('security')}>Security Center</FooterLink>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Legal & Privacy</h3>
+                        <ul className="mt-4 space-y-2 text-sm">
                             <FooterLink onClick={() => setActiveView('privacy')}>Privacy Center</FooterLink>
-                            <FooterLink onClick={() => handleExternalLink('/#cookies')}>Cookie Policy</FooterLink>
+                            <FooterLink onClick={() => openLegalModal('Terms of Use', LEGAL_CONTENT.TERMS_OF_USE)}>Terms of Use</FooterLink>
+                             <FooterLink onClick={() => openLegalModal('Online Banking Guarantee', LEGAL_CONTENT.ONLINE_BANKING_GUARANTEE)}>Online Banking Guarantee</FooterLink>
+                            <FooterLink onClick={() => openLegalModal('Cookie Policy', LEGAL_CONTENT.COOKIE_POLICY)}>Cookie Policy</FooterLink>
                         </ul>
                     </div>
                     <div>
@@ -98,7 +96,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveView, onContactSupportC
                     </div>
                 </div>
                 <div className="mt-12 border-t border-slate-700 pt-8 text-sm text-center">
-                    <p>&copy; {new Date().getFullYear()} iCredit Union®. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} iCredit Union®. All rights reserved. Member FDIC.</p>
                 </div>
             </div>
         </footer>
