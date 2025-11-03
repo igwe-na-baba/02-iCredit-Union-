@@ -5,6 +5,10 @@ import {
     XSocialIcon,
     LinkedInIcon,
     InstagramIcon,
+    AppleIcon,
+    GooglePlayIcon,
+    FdicIcon,
+    EqualHousingLenderIcon,
 } from './Icons';
 import { LEGAL_CONTENT } from '../constants';
 
@@ -21,6 +25,17 @@ const FooterLink: React.FC<{ onClick: () => void; children: React.ReactNode }> =
         </button>
     </li>
 );
+
+const DownloadButton: React.FC<{ icon: React.ReactNode; store: string; title: string; href: string }> = ({ icon, store, title, href }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors w-44 shadow-md">
+        {icon}
+        <div className="text-left">
+            <p className="text-xs leading-none opacity-80">{store}</p>
+            <p className="text-lg leading-tight">{title}</p>
+        </div>
+    </a>
+);
+
 
 export const Footer: React.FC<FooterProps> = ({ setActiveView, onOpenSendMoneyFlow, openLegalModal }) => {
 
@@ -71,6 +86,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveView, onOpenSendMoneyFl
                     <div>
                         <h3 className="font-semibold text-slate-200 tracking-wider uppercase">Help & Support</h3>
                         <ul className="mt-4 space-y-2 text-sm">
+                            <FooterLink onClick={() => onOpenSendMoneyFlow('send')}>Send Money</FooterLink>
                             <FooterLink onClick={() => setActiveView('contact')}>Contact Us</FooterLink>
                             <FooterLink onClick={() => setActiveView('support')}>Help Center</FooterLink>
                             <FooterLink onClick={() => setActiveView('atmLocator')}>ATM Locator</FooterLink>
@@ -93,10 +109,25 @@ export const Footer: React.FC<FooterProps> = ({ setActiveView, onOpenSendMoneyFl
                             <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="hover:text-white transition-all duration-200 hover:scale-125"><LinkedInIcon className="w-5 h-5"/></a>
                             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-white transition-all duration-200 hover:scale-125"><InstagramIcon className="w-5 h-5"/></a>
                         </div>
+                        <h3 className="font-semibold text-slate-200 tracking-wider uppercase mt-8">Download Our App</h3>
+                        <div className="mt-4 space-y-3 flex flex-col items-start">
+                            <DownloadButton icon={<AppleIcon className="w-8 h-8"/>} store="Download on the" title="App Store" href="https://www.apple.com/app-store/" />
+                            <DownloadButton icon={<GooglePlayIcon className="w-6 h-6 ml-1"/>} store="GET IT ON" title="Google Play" href="https://play.google.com/store" />
+                        </div>
                     </div>
                 </div>
-                <div className="mt-12 border-t border-slate-700 pt-8 text-sm text-center">
-                    <p>&copy; {new Date().getFullYear()} iCredit Union®. All rights reserved. Member FDIC.</p>
+                <div className="mt-12 border-t border-slate-700 pt-8 text-xs text-slate-500 space-y-4">
+                    <p>iCredit Union® is a fictional financial institution created for demonstration purposes. This is not a real bank. Products and services are simulated. NMLS ID #9999999.</p>
+                    <div className="flex items-center justify-center space-x-6">
+                        <div className="flex items-center space-x-2">
+                             <FdicIcon className="h-5 w-auto" />
+                        </div>
+                         <div className="flex items-center space-x-2">
+                            <EqualHousingLenderIcon className="w-5 h-5"/>
+                            <span>Equal Housing Lender</span>
+                        </div>
+                    </div>
+                    <p className="text-center pt-4">&copy; {new Date().getFullYear()} iCredit Union®. All rights reserved.</p>
                 </div>
             </div>
         </footer>

@@ -51,6 +51,7 @@ const TaskItem: React.FC<{ task: Task; onToggle: (id: string) => void; onDeleteR
     );
 };
 
+// FIX: Renamed component to `Tasks` to resolve casing conflict with `Tasks.tsx` by standardizing on one file.
 export const Tasks: React.FC<TasksProps> = ({ tasks, addTask, toggleTask, deleteTask }) => {
     const [text, setText] = useState('');
     const [dueDate, setDueDate] = useState('');

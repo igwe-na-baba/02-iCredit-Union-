@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Country, Recipient } from '../types';
-import { ALL_COUNTRIES, BANKS_BY_COUNTRY, BANK_ACCOUNT_CONFIG } from '../constants';
+import { ALL_COUNTRIES, BANKS_BY_COUNTRY, BANK_ACCOUNT_CONFIG, COUNTRY_CALLING_CODES } from '../constants';
 import { getCountryBankingTip, BankingTipResult } from '../services/geminiService';
 import { sendSmsNotification, sendTransactionalEmail, generateOtpEmail, generateOtpSms } from '../services/notificationService';
 import { InfoIcon, SpinnerIcon, ShieldCheckIcon, UserCircleIcon, HomeIcon, BankIcon, CheckCircleIcon, getBankIcon } from './Icons';
@@ -202,7 +202,26 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({ onClose, o
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setTouched(prev => ({ ...prev, [name]: true }));
-      const error = validateField(name, value);
+      let finalValue = value;
+
+      // Auto-prepend country code logic for phone number
+      if (name === 'phone' && value.trim()) {
+          const callingCode = COUNTRY_CALLING_CODES[formData.country.code];
+          if (callingCode) {
+              const trimmedValue = value.trim();
+              if (!trimmedValue.startsWith('+')) {
+                  const digitsOnly = trimmedValue.replace(/\D/g, '');
+                  if (digitsOnly.startsWith(callingCode)) {
+                      finalValue = `+${digitsOnly}`;
+                  } else {
+                      finalValue = `+${callingCode}${digitsOnly}`;
+                  }
+                  setFormData(prev => ({ ...prev, phone: finalValue }));
+              }
+          }
+      }
+
+      const error = validateField(name, finalValue);
       setErrors(prev => ({...prev, [name]: error}));
 
       // Trigger verification simulation for bank details
@@ -404,6 +423,11 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({ onClose, o
                               <div>
                                   <label className="block text-sm font-medium text-slate-300">Recipient's Phone Number (Optional)</label>
                                   <input type="tel" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleBlur} className={inputClasses('phone')} placeholder="+1 (555) 123-4567" />
+                                  {COUNTRY_CALLING_CODES[formData.country.code] && (
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        Country code +{COUNTRY_CALLING_CODES[formData.country.code]} will be added if missing.
+                                    </p>
+                                  )}
                                   {errors.phone && touched.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                               </div>
                           </div>

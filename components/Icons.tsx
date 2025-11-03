@@ -627,6 +627,59 @@ export const VerizonIcon = ({ className }: { className?: string }) => <svg viewB
 export const BtcIcon = ({ className }: { className?: string }) => <svg viewBox="0 0 24 24" className={className} fill="#F7931A"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>;
 export const EthIcon = ({ className }: { className?: string }) => <svg viewBox="0 0 24 24" className={className} fill="#627EEA"><path d="M12 2L3 11l9 9 9-9L12 2z"/></svg>;
 export const ShellIcon = ({ className }: { className?: string }) => <svg viewBox="0 0 24 24" className={className} fill="#FFD700"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>;
+export const XIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+);
+// FIX: Added missing icons
+export const ShieldCheckIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.745 3.745 0 013.296-1.043A3.745 3.745 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+    </svg>
+);
+export const PencilIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 19.5l-3.39 1.098 1.098-3.39L16.862 4.487z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.125l-1.688-1.688" />
+    </svg>
+);
+export const VisaIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 12" className={className} fillRule="nonzero" fill="#1A1F71">
+        <path d="M30.6 0H21.3l-5.6 12h3.2l1-2.4h5.2l.6 2.4h3.1L30.6 0zm-5 7.9l1.8-4.4 1.8 4.4H25.6zM15.4 0L11 7.3 10.2 0H7l5.5 12h2.8l5-12zM0 .3h2.9l1.8 8.6L6.9.3h2.9l-2.8 11.4H3.7L0 .3z"/>
+    </svg>
+);
+export const MastercardIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
+        <circle cx="8" cy="12" r="7" fill="#EA001B"/>
+        <circle cx="16" cy="12" r="7" fill="#F79E1B"/>
+        <path d="M12 12a7 7 0 010-14 7 7 0 010 14z" fill="#FF5F00"/>
+    </svg>
+);
+export const SearchIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+    </svg>
+);
+
+export const GooglePlayIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 22V2l18 10-18 10zm2-3.15L15.65 12 5 5.15V9.4l4.35 1.5-4.35 1.5v4.25z" />
+    </svg>
+);
+
+export const FdicIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" fill="currentColor">
+        <text x="50" y="15" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="bold" textAnchor="middle">Member FDIC</text>
+    </svg>
+);
+
+export const EqualHousingLenderIcon = ({ className }: { className?: string }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+    </svg>
+);
+
 
 // Generic bank icon loader
 const bankLogos: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -723,39 +776,5 @@ export const HomeIcon = ({ className }: { className?: string }) => (
 export const IdentificationIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-    </svg>
-);
-export const XIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-// FIX: Added missing icons
-export const ShieldCheckIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.745 3.745 0 013.296-1.043A3.745 3.745 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-    </svg>
-);
-export const PencilIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 19.5l-3.39 1.098 1.098-3.39L16.862 4.487z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.125l-1.688-1.688" />
-    </svg>
-);
-export const VisaIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 12" className={className} fillRule="nonzero" fill="#1A1F71">
-        <path d="M30.6 0H21.3l-5.6 12h3.2l1-2.4h5.2l.6 2.4h3.1L30.6 0zm-5 7.9l1.8-4.4 1.8 4.4H25.6zM15.4 0L11 7.3 10.2 0H7l5.5 12h2.8l5-12zM0 .3h2.9l1.8 8.6L6.9.3h2.9l-2.8 11.4H3.7L0 .3z"/>
-    </svg>
-);
-export const MastercardIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
-        <circle cx="8" cy="12" r="7" fill="#EA001B"/>
-        <circle cx="16" cy="12" r="7" fill="#F79E1B"/>
-        <path d="M12 12a7 7 0 010-14 7 7 0 010 14z" fill="#FF5F00"/>
-    </svg>
-);
-export const SearchIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
 );

@@ -53,6 +53,12 @@ const menuConfig: {
         ]
     },
      {
+        category: 'Our Network',
+        items: [
+            { view: 'network', label: 'Global Banking Network', description: "Explore our partner banks.", icon: GlobeAmericasIcon },
+        ]
+    },
+     {
         category: 'Grow',
         items: [
             { view: 'invest', label: 'Invest', description: "Stocks, ETFs, and more.", icon: TrendingUpIcon },

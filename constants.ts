@@ -105,6 +105,10 @@ export const ALL_COUNTRIES: Country[] = [
     // Add more countries as needed
 ];
 
+export const COUNTRY_CALLING_CODES: { [countryCode: string]: string } = {
+    US: '1', GB: '44', DE: '49', CA: '1', AU: '61', JP: '81', FR: '33', CN: '86', IN: '91', BR: '55', RU: '7', IT: '39', ES: '34', MX: '52', KR: '82', ID: '62', NL: '31', CH: '41', TR: '90', SE: '46', PL: '48', BE: '32', AR: '54', AT: '43', NO: '47', AE: '971', ZA: '27', DK: '45', SG: '65', MY: '60', HK: '852', NZ: '64', CL: '56', PH: '63', IE: '353', PT: '351', GR: '30', CZ: '420', HU: '36', RO: '40', IL: '972', SA: '966', QA: '974', EG: '20', TH: '66', VN: '84', PK: '92', BD: '880', NG: '234', CO: '57', PE: '51', VE: '58', UA: '380', FI: '358', BG: '359', HR: '385', LT: '370', LV: '371', EE: '372', SK: '421', SI: '386', LU: '352', CY: '357', MT: '356', IS: '354', EC: '593', GT: '502', CR: '506', PA: '507', UY: '598', PY: '595', BO: '591', SV: '503', HN: '504', NI: '505', DO: '1', JM: '1', TT: '1', KE: '254', GH: '233', TZ: '255', UG: '256', MA: '212', DZ: '213', TN: '216', JO: '962', LB: '961', OM: '968', KW: '965', BH: '973', LK: '94', NP: '977', GE: '995', AM: '374', AZ: '994', KZ: '7', UZ: '998', MN: '976', KH: '855', LA: '856', MM: '95',
+};
+
 export const CURRENCIES_LIST = Array.from(new Map(ALL_COUNTRIES.map(c => [c.currency, c])).values())
     .map(c => ({
         code: c.currency,
@@ -515,17 +519,18 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     receiveAmount: 490.00,
     fee: 5,
     exchangeRate: 1,
-    status: TransactionStatus.IN_TRANSIT,
-    estimatedArrival: new Date(now.getTime() + 86400000),
+    status: TransactionStatus.FLAGGED_AWAITING_CLEARANCE,
+    estimatedArrival: new Date(now.getTime() + 86400000 * 3),
     statusTimestamps: {
         [TransactionStatus.SUBMITTED]: new Date(now.getTime() - 3600000),
-        [TransactionStatus.CONVERTING]: new Date(now.getTime() - 3600000 + 4000), // 4s later
-        [TransactionStatus.IN_TRANSIT]: new Date(now.getTime() - 3600000 + 12000), // 12s later
+        [TransactionStatus.CONVERTING]: new Date(now.getTime() - 3600000 + 4000),
+        [TransactionStatus.FLAGGED_AWAITING_CLEARANCE]: new Date(now.getTime() - 3600000 + 12000),
     },
     description: "Family support",
     type: 'debit',
     purpose: 'Family Support',
     reviewed: false,
+    requiresAuth: true,
   },
   {
     id: `txn_${now.getTime() - 86400000 * 5}`,

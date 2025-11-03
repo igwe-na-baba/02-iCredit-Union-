@@ -1,7 +1,7 @@
 // FIX: Import React to make React types like `ComponentType` available in this file.
 import React from 'react';
 
-export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire' | 'about' | 'contact' | 'wallet' | 'ratings' | 'globalAid';
+export type View = 'dashboard' | 'send' | 'recipients' | 'history' | 'security' | 'cards' | 'insurance' | 'loans' | 'support' | 'accounts' | 'crypto' | 'services' | 'checkin' | 'platform' | 'tasks' | 'flights' | 'utilities' | 'integrations' | 'advisor' | 'invest' | 'atmLocator' | 'quickteller' | 'qrScanner' | 'privacy' | 'wire' | 'about' | 'contact' | 'wallet' | 'ratings' | 'globalAid' | 'network';
 
 export type BalanceDisplayMode = 'global' | 'domestic';
 

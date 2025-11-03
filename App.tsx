@@ -23,7 +23,7 @@ import { TravelCheckIn } from './components/TravelCheckIn';
 import { PlatformFeatures } from './components/PlatformFeatures';
 import { DynamicIslandSimulator } from './components/DynamicIslandSimulator';
 import { BankingChat } from './components/BankingChat';
-// FIX: Corrected import path casing from './components/tasks' to './components/Tasks' to resolve module resolution errors.
+// FIX: Corrected import path casing from './components/tasks' to './components/Tasks' to resolve a module resolution error in case-sensitive environments.
 import { Tasks } from './components/Tasks';
 import { Flights } from './components/Flights';
 import { Utilities } from './components/Utilities';
@@ -84,6 +84,7 @@ import { LegalModal } from './components/LegalModal';
 import { DigitalWallet } from './components/DigitalWallet';
 import { Ratings } from './components/Ratings';
 import { GlobalAid } from './components/GlobalAid';
+import { GlobalBankingNetwork } from './components/GlobalBankingNetwork';
 
 
 type AuthStatus = 'intro' | 'initializing' | 'auth' | 'loggedIn' | 'locked' | 'creatingAccount';
@@ -894,6 +895,7 @@ function AppContent() {
     wallet: <DigitalWallet wallet={walletDetails} />,
     ratings: <Ratings />,
     globalAid: <GlobalAid donations={donations} onDonate={handleDonate} accounts={accounts} />,
+    network: <GlobalBankingNetwork />,
   };
 
   return (

@@ -10,8 +10,11 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Replaced the constructor-based state initialization with a modern class property to resolve errors where `this.state` was accessed while undefined.
-  state: State = { hasError: false };
+  // FIX: Added a constructor to properly initialize state and ensure 'this.props' is available throughout the component lifecycle, resolving the 'Property 'props' does not exist' error.
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.

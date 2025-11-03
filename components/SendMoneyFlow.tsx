@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Recipient, Transaction, Account, SecuritySettings, View, TransactionStatus, AccountType, UserProfile } from '../types';
 import { STANDARD_FEE, EXPRESS_FEE, EXCHANGE_RATES, TRANSFER_PURPOSES, USER_PIN, NETWORK_AUTH_CODE } from '../constants';
-import { SpinnerIcon, CheckCircleIcon, ExclamationTriangleIcon, KeypadIcon, FaceIdIcon, ShieldCheckIcon, CameraIcon, ClipboardDocumentIcon, XIcon, XCircleIcon, NetworkIcon, GlobeAltIcon, UsersIcon, getBankIcon } from './Icons';
+import { SpinnerIcon, CheckCircleIcon, ExclamationTriangleIcon, KeypadIcon, FaceIdIcon, ShieldCheckIcon, CameraIcon, ClipboardDocumentIcon, XIcon, XCircleIcon, NetworkIcon, GlobeAltIcon, UsersIcon, getBankIcon, ArrowRightIcon, ScaleIcon } from './Icons';
 import { triggerHaptic } from '../utils/haptics';
 import { PaymentReceipt } from './PaymentReceipt';
 import { CheckDepositFlow } from './CheckDepositFlow';
@@ -300,162 +300,182 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
     const evenlySplitAmount = splitRecipients.length > 0 ? totalSplitAmount / splitRecipients.length : 0;
     const totalCustomAmount = Object.values(customAmounts).reduce((sum: number, val: string) => sum + (parseFloat(val) || 0), 0);
     const splitAmountError = splitType === 'custom' && totalCustomAmount !== totalSplitAmount ? `Custom amounts must add up to ${totalSplitAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.` : null;
-    const isSplitInvalid = totalSplitAmount <= 0 || splitRecipients.length < 2 || !sourceAccount || totalSplitAmount > sourceAccount.balance || (splitType === 'custom' && totalCustomAmount !== totalSplitAmount);
 
-    const handleConfirmSplit = () => {
-        if(isSplitInvalid || !sourceAccount) return;
-        setIsConfirmationModalOpen(true);
-    }
+    const handleSplitSubmit = () => {
+        if(splitRecipients.length < 2 || totalSplitAmount <= 0) return;
+        if(splitType === 'custom' && splitAmountError) return;
 
-    const handleExecuteSplit = () => {
-        const splits = splitRecipients.map(r => ({
-            recipient: r,
-            amount: splitType === 'even' ? evenlySplitAmount : parseFloat(customAmounts[r.id]) || 0
-        }));
-        const success = onSplitTransaction({ sourceAccountId, splits, totalAmount: totalSplitAmount, purpose });
-        setIsConfirmationModalOpen(false);
-        if (success) {
-            handleNextStep(); // Go to success view for split
-        } else {
-            // Handle error, maybe show a toast
-        }
+        handleNextStep(); // Move to authorize step
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (recipientInputRef.current && !recipientInputRef.current.contains(event.target as Node)) {
-                setShowRecipientDropdown(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-  // ----- END SPLIT PAYMENT LOGIC -----
+    const handleConfirmSplit = () => {
+        const splits = splitRecipients.map(r => ({
+            recipient: r,
+            amount: splitType === 'even' ? evenlySplitAmount : (parseFloat(customAmounts[r.id]) || 0)
+        }));
+        const success = onSplitTransaction({ sourceAccountId, splits, totalAmount: totalSplitAmount, purpose });
+        if(success) {
+            handleNextStep(); // Move to security check
+        } else {
+            setPinError('Transaction failed. Check balance.');
+            setStep(0); // Go back to start on failure
+        }
+        setIsConfirmationModalOpen(false);
+    };
 
-  const renderSendContent = () => {
-    const SelectedRecipientBankLogo = selectedRecipient ? getBankIcon(selectedRecipient.bankName) : null;
 
+  const renderStepContent = () => {
     switch(step) {
       case 0:
+        // Tabbed view for Send, Split, Deposit
         return (
-          <>
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Send Money</h2>
-            <div className="space-y-4">
-               <div>
-                <label className="block text-sm font-medium text-slate-700">Send From</label>
-                <select value={sourceAccountId} onChange={handleSourceAccountChange} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset">
-                  {internalAccounts.map(acc => ( <option key={acc.id} value={acc.id}> {acc.nickname || acc.type} ({acc.balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}) </option> ))}
-                  {externalAccounts.length > 0 && <optgroup label="External Accounts">
-                    {externalAccounts.map(acc => ( <option key={acc.id} value={acc.id}> {acc.nickname || acc.type} </option> ))}
-                  </optgroup>}
-                  <option value="link_new_account">Link New Account...</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">Recipient</label>
-                <button type="button" onClick={() => setIsRecipientSelectorOpen(true)} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset flex items-center justify-between text-left">
-                  {selectedRecipient && SelectedRecipientBankLogo ? (
-                    <div className="flex items-center space-x-3">
-                      <SelectedRecipientBankLogo className="w-6 h-6 rounded-md bg-white p-0.5" />
-                      <div>
-                        <p className="font-semibold text-slate-800">{selectedRecipient.nickname || selectedRecipient.fullName}</p>
-                        <p className="text-xs text-slate-500">{selectedRecipient.bankName}</p>
-                      </div>
+             <div className="animate-fade-in-up">
+                 <div className="flex border-b border-slate-200 mb-4">
+                     { (['send', 'split', 'deposit'] as const).map(tab => (
+                        <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-semibold capitalize transition-colors ${activeTab === tab ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}>
+                            {tab}
+                        </button>
+                     ))}
+                 </div>
+                 {activeTab === 'send' && (
+                     <div className="space-y-4">
+                        <div>
+                         <label className="block text-sm font-medium text-slate-700">Send From</label>
+                         <select value={sourceAccountId} onChange={handleSourceAccountChange} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset">
+                           {internalAccounts.map(acc => ( <option key={acc.id} value={acc.id}> {acc.nickname || acc.type} ({acc.balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}) </option> ))}
+                           {externalAccounts.length > 0 && <optgroup label="External Accounts">{externalAccounts.map(acc => (<option key={acc.id} value={acc.id}>{acc.nickname}</option>))}</optgroup>}
+                           <option value="link_new_account">-- Link a New Account --</option>
+                         </select>
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-slate-700">Recipient</label>
+                         <button onClick={() => setIsRecipientSelectorOpen(true)} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset text-left flex justify-between items-center">
+                            {selectedRecipient ? <span>{selectedRecipient.nickname ? `${selectedRecipient.nickname} (${selectedRecipient.fullName})` : selectedRecipient.fullName}</span> : <span className="text-slate-500">Select a recipient...</span>}
+                            <span>▼</span>
+                         </button>
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-slate-700">You Send</label>
+                         <div className="mt-1 relative rounded-md shadow-digital-inset bg-slate-200 flex items-center">
+                           <input type="number" value={sendAmount} onChange={e => setSendAmount(e.target.value)} className="w-full bg-transparent border-0 p-3 pr-4 text-lg font-mono text-slate-800 flex-grow" placeholder="0.00"/>
+                           <div className="p-3 flex items-center space-x-2 border-l border-slate-300 pointer-events-none">
+                              <img src={`https://flagcdn.com/w40/us.png`} alt="USD flag" className="w-5 h-auto" />
+                             <span className="text-slate-500 font-semibold">USD</span>
+                           </div>
+                         </div>
+                         {amountError && <p className="text-red-500 text-xs mt-1">{amountError}</p>}
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-slate-700 mb-2">Delivery Speed</label>
+                         <div className="grid grid-cols-2 gap-2">
+                             <button onClick={() => setDeliverySpeed('Standard')} className={`p-3 rounded-lg text-left transition-all ${deliverySpeed === 'Standard' ? 'shadow-digital-inset' : 'shadow-digital'}`}>
+                                 <p className="font-bold text-slate-800">Standard</p>
+                                 <p className="text-xs text-slate-500">~2-3 business days</p>
+                                 <p className="text-sm font-semibold text-primary mt-1">{STANDARD_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} Fee</p>
+                             </button>
+                              <button onClick={() => setDeliverySpeed('Express')} className={`p-3 rounded-lg text-left transition-all ${deliverySpeed === 'Express' ? 'shadow-digital-inset' : 'shadow-digital'}`}>
+                                 <p className="font-bold text-slate-800">Express</p>
+                                 <p className="text-xs text-slate-500">Within 24 hours</p>
+                                 <p className="text-sm font-semibold text-primary mt-1">{EXPRESS_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} Fee</p>
+                             </button>
+                         </div>
+                       </div>
+                       <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-2 text-sm">
+                         <div className="flex justify-between">
+                             <span className="text-slate-600">Total Debited:</span>
+                             <span className="font-mono text-slate-800 font-semibold">{totalCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                         </div>
+                          <div className="flex justify-between font-bold text-base">
+                             <span className="text-slate-600">Recipient Gets:</span>
+                             <span className="text-primary">{receiveAmount.toLocaleString('en-US', { style: 'currency', currency: selectedRecipient?.country.currency })}</span>
+                         </div>
+                       </div>
+                       <button onClick={handleNextStep} disabled={isAmountInvalid || !selectedRecipient} className="w-full py-3 text-white bg-primary rounded-lg font-semibold shadow-md disabled:bg-primary/50">
+                         Review Transfer
+                       </button>
+                     </div>
+                 )}
+                 {activeTab === 'split' && (
+                    <div className="space-y-4">
+                        <div>
+                         <label className="block text-sm font-medium text-slate-700">Split Total Amount (USD)</label>
+                         <input type="number" value={splitAmount} onChange={e => setSplitAmount(e.target.value)} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset" placeholder="0.00" />
+                        </div>
+                        <div ref={recipientInputRef}>
+                            <label className="block text-sm font-medium text-slate-700">Add Recipients</label>
+                            <input type="text" value={recipientSearch} onChange={e => setRecipientSearch(e.target.value)} onFocus={() => setShowRecipientDropdown(true)} placeholder="Search for recipients..." className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset" />
+                            {showRecipientDropdown && searchResults.length > 0 && (
+                                <div className="absolute z-10 w-[calc(100%-3rem)] bg-white rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                   {searchResults.map(r => <button key={r.id} onClick={() => handleAddSplitRecipient(r)} className="block w-full text-left p-2 hover:bg-slate-100">{r.fullName}</button>)}
+                                </div>
+                            )}
+                        </div>
+                        {splitRecipients.length > 0 && (
+                            <div className="p-2 bg-slate-200 rounded-lg shadow-inner">
+                                {splitRecipients.map(r => (
+                                    <div key={r.id} className="flex items-center justify-between p-2">
+                                        <span>{r.fullName}</span>
+                                        <button onClick={() => handleRemoveSplitRecipient(r.id)}><XCircleIcon className="w-5 h-5 text-red-500"/></button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <button onClick={handleSplitSubmit} disabled={splitRecipients.length < 2 || totalSplitAmount <= 0} className="w-full py-3 text-white bg-primary rounded-lg font-semibold shadow-md disabled:bg-primary/50">
+                          Review Split ({splitRecipients.length})
+                        </button>
                     </div>
-                  ) : (
-                    <span className="text-slate-500">Select a recipient...</span>
-                  )}
-                  <span className="text-slate-500">▼</span>
-                </button>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700">You Send</label>
-                <div className="mt-1 relative rounded-md shadow-digital-inset bg-slate-200 flex items-center">
-                  <input type="number" value={sendAmount} onChange={e => setSendAmount(e.target.value)} className="w-full bg-transparent border-0 p-3 pr-4 text-lg font-mono text-slate-800 flex-grow" placeholder="0.00"/>
-                  <div className="p-3 flex items-center space-x-2 border-l border-slate-300 pointer-events-none">
-                     <img src={`https://flagcdn.com/w40/us.png`} alt="USD flag" className="w-5 h-auto" />
-                    <span className="text-slate-500 font-semibold">USD</span>
-                  </div>
-                </div>
-                {amountError && <p className="text-red-500 text-xs mt-1">{amountError}</p>}
-              </div>
-
-              {/* Real-time conversion preview */}
-              {numericSendAmount > 0 && selectedRecipient && !amountError && (
-                  <div className="mt-4 animate-fade-in-up">
-                      <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                              <div className="p-2 bg-slate-100 rounded-full shadow-digital">
-                                  <img 
-                                      src={`https://flagcdn.com/w40/${selectedRecipient.country.code.toLowerCase()}.png`} 
-                                      alt={`${selectedRecipient.country.currency} flag`} 
-                                      className="w-8 h-auto" 
-                                  />
-                              </div>
-                              <div>
-                                  <p className="text-sm text-slate-500">Recipient gets (approx.)</p>
-                                  <p className="font-bold text-xl text-primary">
-                                      {receiveAmount.toLocaleString('en-US', {
-                                          style: 'currency',
-                                          currency: selectedRecipient.country.currency,
-                                      })}
-                                  </p>
-                              </div>
-                          </div>
-                          <div className="text-right">
-                              <p className="text-xs text-slate-500">Exchange Rate</p>
-                              <p className="font-mono text-sm font-semibold text-slate-700">1 USD ≈ {exchangeRate.toFixed(4)} {selectedRecipient.country.currency}</p>
-                          </div>
-                      </div>
-                  </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Delivery Speed</label>
-                <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => setDeliverySpeed('Standard')} className={`p-3 rounded-lg text-left transition-all ${deliverySpeed === 'Standard' ? 'shadow-digital-inset' : 'shadow-digital'}`}>
-                        <p className="font-bold text-slate-800">Standard</p>
-                        <p className="text-xs text-slate-500">~2-3 business days</p>
-                        <p className="text-sm font-semibold text-primary mt-1">{STANDARD_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} Fee</p>
-                    </button>
-                     <button onClick={() => setDeliverySpeed('Express')} className={`p-3 rounded-lg text-left transition-all ${deliverySpeed === 'Express' ? 'shadow-digital-inset' : 'shadow-digital'}`}>
-                        <p className="font-bold text-slate-800">Express</p>
-                        <p className="text-xs text-slate-500">Within 24 hours</p>
-                        <p className="text-sm font-semibold text-primary mt-1">{EXPRESS_FEE.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} Fee</p>
-                    </button>
-                </div>
-              </div>
-              <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-2 text-sm">
-                <div className="flex justify-between">
-                    <span className="text-slate-600">Total Debited:</span>
-                    <span className="font-mono text-slate-800 font-semibold">{totalCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                </div>
-              </div>
-              <button onClick={handleNextStep} disabled={isAmountInvalid || !selectedRecipient} className="w-full py-3 text-white bg-primary rounded-lg font-semibold shadow-md disabled:bg-primary/50">
-                Review Transfer
-              </button>
-            </div>
-          </>
+                 )}
+                 {activeTab === 'deposit' && (
+                    <CheckDepositFlow accounts={accounts} onDepositCheck={onDepositCheck} />
+                 )}
+             </div>
         );
       case 1:
-        const ReviewBankLogo = selectedRecipient ? getBankIcon(selectedRecipient.bankName) : null;
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-slate-800 text-center">Review Your Transfer</h2>
-            <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-3 divide-y divide-slate-300">
-                <div className="pt-2"> <span className="text-sm text-slate-500">From</span> <p className="font-semibold text-slate-800">{sourceAccount?.nickname || sourceAccount?.type}</p> </div>
-                <div className="pt-3"> 
-                    <span className="text-sm text-slate-500">To</span> 
-                    <div className="flex items-center space-x-2">
-                        {ReviewBankLogo && <ReviewBankLogo className="w-5 h-5 rounded-sm bg-white p-0.5" />}
-                        <p className="font-semibold text-slate-800">{selectedRecipient?.fullName}</p>
-                    </div>
+            
+            <div className="flex items-center justify-between p-4 bg-slate-200 rounded-lg shadow-digital-inset">
+                <div className="text-left">
+                    <p className="text-xs text-slate-500">From</p>
+                    <p className="font-semibold text-slate-800">{sourceAccount?.nickname || sourceAccount?.type}</p>
                 </div>
-                <div className="pt-3"> <span className="text-sm text-slate-500">You Send</span> <p className="font-semibold text-slate-800">{numericSendAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p> </div>
-                <div className="pt-3"> <span className="text-sm text-slate-500">Recipient Gets</span> <p className="font-semibold text-primary">{receiveAmount.toLocaleString('en-US', { style: 'currency', currency: selectedRecipient?.country.currency })}</p> </div>
-                 <div className="pt-3"> <span className="text-sm text-slate-500">Delivery</span> <p className="font-semibold text-slate-800">{deliverySpeed}</p> </div>
+                <div className="flex-shrink-0 px-2">
+                    <ArrowRightIcon className="w-6 h-6 text-slate-400" />
+                </div>
+                <div className="text-right">
+                    <p className="text-xs text-slate-500">To</p>
+                    <p className="font-semibold text-slate-800">{selectedRecipient?.fullName}</p>
+                </div>
             </div>
-             <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset text-center">
+
+            <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-2 divide-y divide-slate-300">
+                <div className="flex justify-between items-center pt-1">
+                    <span className="text-sm text-slate-600">You send</span>
+                    <span className="font-mono text-slate-800">{numericSendAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                    <span className="text-sm text-slate-600">Transfer fee ({deliverySpeed})</span>
+                    <span className="font-mono text-slate-800">+ {fee.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 font-bold text-base">
+                    <span className="text-slate-800">Total to be debited</span>
+                    <span className="font-mono text-slate-900">{totalCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                </div>
+            </div>
+            
+            <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-slate-600"><ScaleIcon className="w-4 h-4 mr-1"/> Exchange rate</span>
+                    <span className="font-mono text-slate-800">1 USD ≈ {exchangeRate.toFixed(4)} {selectedRecipient?.country.currency}</span>
+                </div>
+                <div className="flex justify-between items-center text-lg font-bold border-t border-slate-300 pt-3 mt-2">
+                    <span className="text-slate-800">Recipient gets</span>
+                    <span className="font-mono text-primary">{receiveAmount.toLocaleString('en-US', { style: 'currency', currency: selectedRecipient?.country.currency })}</span>
+                </div>
+            </div>
+
+             <div className="p-4 bg-slate-200/50 rounded-lg text-center">
                  <p className="text-xs text-slate-500">Your exchange rate is locked for:</p>
                  <p className={`text-xl font-bold font-mono ${rateLockCountdown < 10 ? 'text-red-500' : 'text-slate-800'}`}>{Math.floor(rateLockCountdown / 60)}:{String(rateLockCountdown % 60).padStart(2, '0')}</p>
              </div>
@@ -488,169 +508,55 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
                 <p className="text-slate-600 mt-2">This is a standard security procedure to protect your account.</p>
             </div>
         );
+      case 4:
+        if (!liveTransaction || !sourceAccount) return <div className="text-center p-8"> <SpinnerIcon className="w-12 h-12 text-primary mx-auto"/> <p className="mt-4 text-slate-600">Finalizing transaction...</p> </div>;
+        
+        return (
+            <PaymentReceipt 
+                transaction={liveTransaction}
+                sourceAccount={sourceAccount}
+                onStartOver={handleStartOver}
+                onViewActivity={() => { onClose(); setActiveView('history'); }}
+                onAuthorizeTransaction={onAuthorizeTransaction}
+                phone={userProfile.phone}
+                onContactSupport={onContactSupport}
+            />
+        );
       default: return null;
     }
   };
 
-  const renderSplitContent = () => {
-    switch(step) {
-        case 0: return (
-             <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Split Payment</h2>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700">Send From</label>
-                    <select value={sourceAccountId} onChange={handleSourceAccountChange} className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset">
-                        {internalAccounts.map(acc => ( <option key={acc.id} value={acc.id}> {acc.nickname || acc.type} ({acc.balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}) </option> ))}
-                    </select>
-                </div>
-                <div ref={recipientInputRef}>
-                    <label className="block text-sm font-medium text-slate-700">Recipients ({splitRecipients.length})</label>
-                    <div className="mt-1 flex flex-wrap gap-2 items-center p-2 bg-slate-200 rounded-md shadow-digital-inset">
-                        {splitRecipients.map(r => (
-                            <div key={r.id} className="bg-primary/20 text-primary-800 text-sm font-semibold px-2 py-1 rounded flex items-center gap-1">
-                                {r.nickname || r.fullName} <button onClick={() => handleRemoveSplitRecipient(r.id)}><XCircleIcon className="w-4 h-4" /></button>
-                            </div>
-                        ))}
-                        <input type="text" value={recipientSearch} onFocus={() => setShowRecipientDropdown(true)} onChange={e => setRecipientSearch(e.target.value)} placeholder={splitRecipients.length === 0 ? "Search recipients..." : "Add another..."} className="flex-grow bg-transparent outline-none p-1" />
-                    </div>
-                    {showRecipientDropdown && searchResults.length > 0 && (
-                        <div className="relative">
-                            <ul className="absolute z-10 w-full bg-slate-100 border border-slate-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
-                                {searchResults.map(r => (
-                                    <li key={r.id} onClick={() => handleAddSplitRecipient(r)} className="p-3 hover:bg-slate-200 cursor-pointer text-sm">{r.fullName} ({r.nickname})</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700">Total Amount</label>
-                    <input type="number" value={splitAmount} onChange={e => setSplitAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full bg-slate-200 p-3 rounded-md shadow-digital-inset" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Split Method</label>
-                    <div className="grid grid-cols-2 gap-2">
-                        <button onClick={() => setSplitType('even')} className={`p-3 rounded-lg transition-all ${splitType === 'even' ? 'shadow-digital-inset' : 'shadow-digital'}`}>Split Evenly</button>
-                        <button onClick={() => setSplitType('custom')} className={`p-3 rounded-lg transition-all ${splitType === 'custom' ? 'shadow-digital-inset' : 'shadow-digital'}`}>Custom Amounts</button>
-                    </div>
-                </div>
-                {splitType === 'even' && splitRecipients.length > 0 && (
-                    <div className="p-3 bg-slate-200 rounded-lg shadow-digital-inset text-center text-slate-600">
-                        Each person will receive <span className="font-bold text-slate-800">{evenlySplitAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                    </div>
-                )}
-                {splitType === 'custom' && (
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        {splitRecipients.map(r => (
-                            <div key={r.id} className="flex items-center gap-2">
-                                <span className="flex-grow text-sm font-medium">{r.nickname || r.fullName}</span>
-                                <input type="number" value={customAmounts[r.id] || ''} onChange={e => handleCustomAmountChange(r.id, e.target.value)} placeholder="0.00" className="w-28 p-2 rounded-md shadow-digital-inset" />
-                            </div>
-                        ))}
-                         {splitAmountError && <p className="text-red-500 text-xs text-center">{splitAmountError}</p>}
-                    </div>
-                )}
-                <button onClick={handleConfirmSplit} disabled={isSplitInvalid} className="w-full py-3 text-white bg-primary rounded-lg font-semibold shadow-md disabled:bg-primary/50">Review Split</button>
-            </div>
-        );
-        case 1: // Success for split
-         return (
-             <div className="text-center p-8 flex flex-col items-center justify-center">
-                <CheckCircleIcon className="w-16 h-16 text-green-500 mb-4" />
-                <h3 className="text-lg font-bold text-slate-800">Split Payment Sent!</h3>
-                <p className="text-sm text-slate-600">{totalSplitAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} was sent to {splitRecipients.length} people.</p>
-                <button onClick={handleStartOver} className="mt-6 w-full py-3 bg-primary text-white rounded-lg">Send Another Payment</button>
-            </div>
-         );
-        default: return null;
-    }
-  };
-
-
-  if (activeTab === 'send' && step === 4) {
-    if (!liveTransaction || !sourceAccount) {
-        return <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4"><SpinnerIcon className="w-12 h-12 text-primary"/></div>;
-    }
-    return (
-        <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4 animate-fade-in">
-             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-6 w-full max-w-lg relative">
-                 <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 z-20"><XIcon className="w-6 h-6"/></button>
-                 <PaymentReceipt 
-                    transaction={liveTransaction}
-                    sourceAccount={sourceAccount}
-                    onStartOver={handleStartOver}
-                    onViewActivity={handleViewActivity}
-                    onAuthorizeTransaction={onAuthorizeTransaction}
-                    phone={userProfile.phone}
-                    onContactSupport={onContactSupport}
-                />
-             </div>
-        </div>
-    );
-  }
-
   return (
-    <>
-      {isRecipientSelectorOpen && (
-        <RecipientSelector 
-          recipients={recipients}
-          onSelect={(recipient) => {
-            setSelectedRecipient(recipient);
-            setIsRecipientSelectorOpen(false);
-          }}
-          onClose={() => setIsRecipientSelectorOpen(false)}
-        />
-      )}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-slate-100 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative animate-fade-in-up">
-              <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600"><XIcon className="w-6 h-6"/></button>
-              
-              <div className="mb-6 border-b border-slate-200">
-                  <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-                      <button onClick={() => setActiveTab('send')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'send' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Send</button>
-                      <button onClick={() => setActiveTab('split')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'split' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Split</button>
-                      <button onClick={() => setActiveTab('deposit')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'deposit' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>Deposit Check</button>
-                  </nav>
-              </div>
-
-              {activeTab === 'send' && renderSendContent()}
-              {activeTab === 'split' && renderSplitContent()}
-              {activeTab === 'deposit' && (
-                  <CheckDepositFlow accounts={internalAccounts} onDepositCheck={onDepositCheck} />
-              )}
-
-              {isConfirmationModalOpen && (
-                  <TransferConfirmationModal 
-                      onClose={() => setIsConfirmationModalOpen(false)}
-                      onConfirm={handleExecuteSplit}
-                      details={
-                          <div className="space-y-2 text-sm">
-                              <div className="flex justify-between"><span>From:</span> <span className="font-semibold">{sourceAccount?.nickname}</span></div>
-                              <div className="flex justify-between font-bold text-base border-t pt-2 mt-2"><span>Total:</span> <span>{totalSplitAmount.toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</span></div>
-                              <h4 className="font-semibold pt-2">Recipients:</h4>
-                              <ul className="text-xs max-h-24 overflow-y-auto">
-                                  {splitRecipients.map(r => (
-                                      <li key={r.id} className="flex justify-between">
-                                          <span>{r.nickname || r.fullName}</span>
-                                          <span className="font-mono">{splitType === 'even' ? evenlySplitAmount.toLocaleString('en-US', {style: 'currency', currency: 'USD'}) : (parseFloat(customAmounts[r.id]) || 0).toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</span>
-                                      </li>
-                                  ))}
-                              </ul>
-                          </div>
-                      }
-                  />
-              )}
-          </div>
-          <style>{`
-              @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
-              .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-              @keyframes fade-in-up {
-                0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-                100% { opacity: 1; transform: translateY(0) scale(1); }
-              }
-              .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
-          `}</style>
-      </div>
-    </>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+        {isRecipientSelectorOpen && <RecipientSelector recipients={recipients} onClose={() => setIsRecipientSelectorOpen(false)} onSelect={(r) => { setSelectedRecipient(r); setIsRecipientSelectorOpen(false); }} />}
+        {isConfirmationModalOpen && (
+            <TransferConfirmationModal 
+                onClose={() => setIsConfirmationModalOpen(false)}
+                onConfirm={handleConfirmSplit}
+                details={
+                    <div className="text-sm space-y-2">
+                        <div className="flex justify-between"><span>Total Amount:</span> <span className="font-bold">{totalSplitAmount.toLocaleString('en-US', {style: 'currency', currency: 'USD'})}</span></div>
+                        <div className="flex justify-between"><span>Recipients:</span> <span className="font-bold">{splitRecipients.length}</span></div>
+                        <div className="flex justify-between"><span>Split Type:</span> <span className="font-bold capitalize">{splitType}</span></div>
+                    </div>
+                }
+            />
+        )}
+        <div className="bg-slate-100 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative animate-fade-in-up">
+            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600"><XIcon className="w-6 h-6"/></button>
+            <div className="min-h-[500px]">
+              {renderStepContent()}
+            </div>
+        </div>
+        <style>{`
+            @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+            .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+            @keyframes fade-in-up {
+              0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+              100% { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+        `}</style>
+    </div>
   );
 };
