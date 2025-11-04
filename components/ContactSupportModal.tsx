@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SpinnerIcon, CheckCircleIcon } from './Icons';
 
 interface ContactSupportModalProps {
     onClose: () => void;
     onSubmit: (data: { topic: string; transactionId?: string; message: string }) => Promise<void>;
     transactions: { id: string }[];
+    initialTransactionId?: string;
 }
 
 const supportTopics = [
@@ -16,13 +17,20 @@ const supportTopics = [
     "Technical Issue"
 ];
 
-export const ContactSupportModal: React.FC<ContactSupportModalProps> = ({ onClose, onSubmit, transactions }) => {
+export const ContactSupportModal: React.FC<ContactSupportModalProps> = ({ onClose, onSubmit, transactions, initialTransactionId }) => {
     const [topic, setTopic] = useState(supportTopics[0]);
     const [transactionId, setTransactionId] = useState('');
     const [message, setMessage] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if(initialTransactionId) {
+            setTopic("Transaction Issue");
+            setTransactionId(initialTransactionId);
+        }
+    }, [initialTransactionId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -1,12 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { EXCHANGE_RATES } from '../constants';
-import { ArrowsRightLeftIcon } from './Icons';
+import { ArrowsRightLeftIcon, SpinnerIcon } from './Icons';
 import { CurrencySelector } from './CurrencySelector';
 
 export const CurrencyConverter: React.FC = () => {
   const [amount, setAmount] = useState('100');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('GBP');
+  const [refreshCountdown, setRefreshCountdown] = useState(30);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+        setRefreshCountdown(prev => {
+            if (prev <= 1) {
+                // In a real app, you would re-fetch rates here.
+                // For this demo, we just reset the timer.
+                return 30;
+            }
+            return prev - 1;
+        });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { convertedAmount, exchangeRate } = useMemo(() => {
     const numericAmount = parseFloat(amount) || 0;
@@ -95,9 +110,10 @@ export const CurrencyConverter: React.FC = () => {
              <p className="text-sm font-semibold text-slate-200">
                 1 {fromCurrency} = {exchangeRate.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })} {toCurrency}
             </p>
-            <p className="text-xs text-slate-400 mt-2">
-                Live rates are for informational purposes only.
-            </p>
+            <div className="flex items-center justify-center space-x-2 text-xs text-slate-400 mt-2">
+                <SpinnerIcon className="w-4 h-4 animate-spin" />
+                <span>Live rate refreshes in {refreshCountdown}s</span>
+            </div>
         </div>
       </div>
     </div>

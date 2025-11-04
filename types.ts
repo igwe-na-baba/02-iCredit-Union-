@@ -148,6 +148,7 @@ export interface Transaction {
   reviewed?: boolean;
   splitGroupId?: string;
   transferMethod?: 'wire';
+  clearanceFeePaid?: boolean;
 }
 
 export type SpendingCategory = 'Electronics' | 'Transport' | 'Food & Drink' | 'Groceries' | 'Shopping' | 'Entertainment' | 'Travel' | 'Other';

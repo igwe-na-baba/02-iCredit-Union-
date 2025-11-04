@@ -23,7 +23,7 @@ import { TravelCheckIn } from './components/TravelCheckIn';
 import { PlatformFeatures } from './components/PlatformFeatures';
 import { DynamicIslandSimulator } from './components/DynamicIslandSimulator';
 import { BankingChat } from './components/BankingChat';
-// FIX: Corrected import path casing from './components/tasks' to './components/Tasks' to resolve a module resolution error in case-sensitive environments.
+// FIX: Corrected import path casing to resolve file conflict.
 import { Tasks } from './components/Tasks';
 import { Flights } from './components/Flights';
 import { Utilities } from './components/Utilities';
@@ -148,6 +148,7 @@ function AppContent() {
   const [savedSession, setSavedSession] = useState<SavedSession | null>(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isContactSupportOpen, setIsContactSupportOpen] = useState(false);
+  const [initialSupportTxId, setInitialSupportTxId] = useState<string | undefined>();
   const [privacySettings, setPrivacySettings] = useState({ ads: true, sharing: true, email: { transactions: true, security: true, promotions: true }, sms: { transactions: true, security: true, promotions: false } });
   const [isLanguageSelectorOpen, setIsLanguageSelectorOpen] = useState(false);
   const [legalModalContent, setLegalModalContent] = useState<{ title: string; content: string } | null>(null);
@@ -180,6 +181,61 @@ function AppContent() {
     const newPush: PushNotification = { id: newNotification.id, type, title, message };
     setPushNotification(newPush);
   }, []);
+
+    useEffect(() => {
+        const timers: number[] = [];
+
+        const activeTransactions = transactions.filter(tx =>
+            tx.status !== TransactionStatus.FUNDS_ARRIVED &&
+            tx.status !== TransactionStatus.FLAGGED_AWAITING_CLEARANCE &&
+            tx.status !== TransactionStatus.PENDING_DEPOSIT
+        );
+
+        activeTransactions.forEach(tx => {
+            const progressionMap: Partial<Record<TransactionStatus, { next: TransactionStatus, delay: number }>> = {
+                [TransactionStatus.SUBMITTED]: { next: TransactionStatus.CONVERTING, delay: 2000 },
+                [TransactionStatus.CONVERTING]: { next: tx.requiresAuth ? TransactionStatus.FLAGGED_AWAITING_CLEARANCE : TransactionStatus.IN_TRANSIT, delay: 3000 },
+                [TransactionStatus.IN_TRANSIT]: { next: TransactionStatus.FUNDS_ARRIVED, delay: 5000 },
+            };
+
+            const currentProgression = progressionMap[tx.status];
+
+            if (currentProgression) {
+                const timer = setTimeout(() => {
+                    setTransactions(prev =>
+                        prev.map(t =>
+                            t.id === tx.id
+                                ? {
+                                    ...t,
+                                    status: currentProgression.next,
+                                    statusTimestamps: {
+                                        ...t.statusTimestamps,
+                                        [currentProgression.next]: new Date(),
+                                    },
+                                    ...(currentProgression.next === TransactionStatus.FUNDS_ARRIVED && { reviewed: true })
+                                }
+                                : t
+                        )
+                    );
+                    
+                    if (currentProgression.next === TransactionStatus.FUNDS_ARRIVED) {
+                        addNotification(
+                            NotificationType.TRANSACTION,
+                            'Funds Delivered',
+                            `Your transfer to ${tx.recipient.fullName} has been successfully delivered.`
+                        );
+                        const { subject, body } = generateFundsArrivedEmail(tx, userProfile.name);
+                        sendTransactionalEmail(userProfile.email, subject, body);
+                    }
+                }, currentProgression.delay);
+                timers.push(timer);
+            }
+        });
+
+        return () => {
+            timers.forEach(clearTimeout);
+        };
+    }, [transactions, addNotification, userProfile.name, userProfile.email]);
 
   const onUpdatePushNotificationSettings = (update: Partial<PushNotificationSettings>) => {
     setPushNotificationSettings(prev => ({ ...prev, ...update }));
@@ -549,12 +605,40 @@ function AppContent() {
     setUserProfile(prev => ({ ...prev, profilePictureUrl: url }));
   };
 
-  const handleAuthorizeTransaction = (transactionId: string) => {
+  const handleAuthorizeTransaction = (transactionId: string, method: 'code' | 'fee' = 'code') => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+
+    if (method === 'fee') {
+        const fee = transaction.sendAmount * 0.15;
+        const sourceAccount = accounts.find(acc => acc.id === transaction.accountId);
+        
+        if (!sourceAccount || sourceAccount.balance < fee) {
+            addNotification(NotificationType.TRANSACTION, 'Clearance Failed', 'Insufficient funds to pay the 15% clearance fee.');
+            return;
+        }
+
+        // Deduct fee
+        setAccounts(prev => prev.map(acc => 
+            acc.id === sourceAccount.id ? { ...acc, balance: acc.balance - fee } : acc
+        ));
+
+        addNotification(NotificationType.TRANSACTION, 'Clearance Fee Paid', `A 15% fee of ${fee.toLocaleString('en-US', {style:'currency', currency:'USD'})} has been paid to expedite your transfer.`);
+    }
+
     setTransactions(prev => prev.map(t => t.id === transactionId ? {
         ...t,
         status: TransactionStatus.IN_TRANSIT,
-        statusTimestamps: { ...t.statusTimestamps, [TransactionStatus.IN_TRANSIT]: new Date() }
+        statusTimestamps: { 
+            ...t.statusTimestamps, 
+            [TransactionStatus.IN_TRANSIT]: new Date() 
+        },
+        estimatedArrival: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 banking days from now
+        clearanceFeePaid: method === 'fee',
+        requiresAuth: false,
+        reviewed: true,
     } : t));
+    
     setShowCongratsOverlay(true);
     setTimeout(() => setShowCongratsOverlay(false), 4000);
   };
@@ -645,6 +729,11 @@ function AppContent() {
       addNotification(NotificationType.ACCOUNT, 'Account Linked', `You've successfully linked your ${bankName} account.`);
   };
   
+  const handleOpenSupportModal = (transactionId?: string) => {
+    setInitialSupportTxId(transactionId);
+    setIsContactSupportOpen(true);
+  };
+
   const onContactSupport = async (data: { topic: string; transactionId?: string; message: string }) => {
     const ticketId = `ICU-${Math.floor(Math.random() * 900000) + 100000}`;
     const { subject, body } = generateSupportTicketConfirmationEmail(userProfile.name, ticketId, data.topic);
@@ -729,7 +818,14 @@ function AppContent() {
     />,
     send: null, // 'send' view is handled by the SendMoneyFlow modal, not as a main view.
     recipients: <Recipients recipients={recipients} addRecipient={addRecipient} onUpdateRecipient={onUpdateRecipient} />,
-    history: <ActivityLog transactions={transactions} onUpdateTransactions={(ids, updates) => setTransactions(prev => prev.map(t => ids.includes(t.id) ? {...t, ...updates} : t))} onRepeatTransaction={handleRepeatTransaction} />,
+    history: <ActivityLog 
+        transactions={transactions} 
+        onUpdateTransactions={(ids, updates) => setTransactions(prev => prev.map(t => ids.includes(t.id) ? {...t, ...updates} : t))} 
+        onRepeatTransaction={handleRepeatTransaction} 
+        onAuthorizeTransaction={handleAuthorizeTransaction}
+        accounts={accounts}
+        onContactSupport={handleOpenSupportModal}
+    />,
     security: <Security 
         advancedTransferLimits={advancedTransferLimits}
         onUpdateAdvancedLimits={setAdvancedTransferLimits}
@@ -947,7 +1043,7 @@ function AppContent() {
                 initialTab={sendMoneyFlowState.initialTab}
                 transactionToRepeat={sendMoneyFlowState.transactionToRepeat}
                 userProfile={userProfile}
-                onContactSupport={() => setIsContactSupportOpen(true)}
+                onContactSupport={() => handleOpenSupportModal()}
             />
         )}
         {isLogoutModalOpen && <LogoutConfirmationModal onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleLogout} />}
@@ -957,7 +1053,7 @@ function AppContent() {
         {pushNotification && <PushNotificationToast notification={pushNotification} onClose={() => setPushNotification(null)} />}
         {showCongratsOverlay && <CongratulationsOverlay />}
         {isResumeModalOpen && savedSession && <ResumeSessionModal session={savedSession} onResume={handleResumeSession} onStartFresh={handleStartFresh} />}
-        {isContactSupportOpen && <ContactSupportModal onClose={() => setIsContactSupportOpen(false)} onSubmit={onContactSupport} transactions={transactions} />}
+        {isContactSupportOpen && <ContactSupportModal initialTransactionId={initialSupportTxId} onClose={() => setIsContactSupportOpen(false)} onSubmit={onContactSupport} transactions={transactions} />}
         {isLanguageSelectorOpen && <LanguageSelector onClose={() => setIsLanguageSelectorOpen(false)} />}
         {legalModalContent && <LegalModal title={legalModalContent.title} content={legalModalContent.content} onClose={() => setLegalModalContent(null)} />}
     </div>

@@ -51,8 +51,7 @@ const TaskItem: React.FC<{ task: Task; onToggle: (id: string) => void; onDeleteR
     );
 };
 
-// FIX: Renamed component to avoid name collision with components/Tasks.tsx
-export const TasksDuplicate: React.FC<TasksProps> = ({ tasks, addTask, toggleTask, deleteTask }) => {
+export const Tasks: React.FC<TasksProps> = ({ tasks, addTask, toggleTask, deleteTask }) => {
     const [text, setText] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);

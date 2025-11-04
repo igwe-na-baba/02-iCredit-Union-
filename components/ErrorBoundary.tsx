@@ -10,7 +10,7 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Added a constructor to properly initialize state and ensure 'this.props' is available throughout the component lifecycle, resolving the 'Property 'props' does not exist' error.
+  // FIX: Added a constructor to properly initialize state and ensure 'this.props' is correctly typed and accessible, resolving the error on 'this.props.children'.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };

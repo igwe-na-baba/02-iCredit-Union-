@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Transaction, TransactionStatus } from '../types';
-import { CheckCircleIcon, UserGroupIcon, NetworkIcon, GlobeAltIcon, BankIcon, CurrencyDollarIcon, DocumentCheckIcon, ExclamationTriangleIcon } from './Icons';
+import { CheckCircleIcon, SendIcon, ArrowsRightLeftIcon, GlobeAltIcon, BankIcon, CurrencyDollarIcon, ShieldCheckIcon, ScaleIcon } from './Icons';
 import { SmsConfirmation } from './SmsConfirmation';
 
 interface LiveTransactionViewProps {
@@ -13,12 +13,12 @@ interface LiveTransactionViewProps {
 export const LiveTransactionView: React.FC<LiveTransactionViewProps> = ({ transaction, phone }) => {
     const steps = useMemo(() => {
         const allPossibleSteps = [
-            { status: TransactionStatus.SUBMITTED, label: 'Payment Initiated', icon: <UserGroupIcon className="w-6 h-6" /> },
-            { status: TransactionStatus.CONVERTING, label: 'In FX Conversion', icon: <NetworkIcon className="w-6 h-6" /> },
-            { status: TransactionStatus.AWAITING_AUTHORIZATION, label: 'Pending Authorization', icon: <DocumentCheckIcon className="w-6 h-6" /> },
-            { status: TransactionStatus.FLAGGED_AWAITING_CLEARANCE, label: 'Flagged for Review', icon: <ExclamationTriangleIcon className="w-6 h-6" /> },
+            { status: TransactionStatus.SUBMITTED, label: 'Payment Initiated', icon: <SendIcon className="w-6 h-6" /> },
+            { status: TransactionStatus.CONVERTING, label: 'Processing FX', icon: <ArrowsRightLeftIcon className="w-6 h-6" /> },
+            { status: TransactionStatus.AWAITING_AUTHORIZATION, label: 'Pending Authorization', icon: <ShieldCheckIcon className="w-6 h-6" /> },
+            { status: TransactionStatus.FLAGGED_AWAITING_CLEARANCE, label: 'Compliance Review', icon: <ScaleIcon className="w-6 h-6" /> },
             { status: TransactionStatus.IN_TRANSIT, label: 'Sent to Network', icon: <GlobeAltIcon className="w-6 h-6" /> },
-            { status: TransactionStatus.FUNDS_ARRIVED, label: 'Delivered to Bank', icon: <BankIcon className="w-6 h-6" /> },
+            { status: TransactionStatus.FUNDS_ARRIVED, label: 'Funds Delivered', icon: <BankIcon className="w-6 h-6" /> },
         ];
         // Filter steps to only include those relevant to this specific transaction's history
         const uniqueStatusesInHistory = [...new Set([

@@ -491,6 +491,25 @@ const now = new Date();
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
+    id: `txn_${now.getTime() - 10000}`, // 10 seconds ago
+    accountId: 'acc_checking_1',
+    recipient: INITIAL_RECIPIENTS[2], // Peter Jones for office supplies
+    sendAmount: 750.00,
+    receiveAmount: 750.00, // Assuming domestic
+    fee: 5,
+    exchangeRate: 1,
+    status: TransactionStatus.SUBMITTED, // This will start the animation
+    estimatedArrival: new Date(now.getTime() + 86400000 * 2), // 2 days from now
+    statusTimestamps: {
+        [TransactionStatus.SUBMITTED]: new Date(now.getTime() - 10000),
+    },
+    description: "Office Supplies Purchase",
+    type: 'debit',
+    purpose: 'Business Expense',
+    reviewed: false,
+    requiresAuth: false, // This will go through without being flagged
+  },
+  {
     id: `txn_${now.getTime() - 86400000}`,
     accountId: 'acc_checking_1',
     recipient: INITIAL_RECIPIENTS[1],

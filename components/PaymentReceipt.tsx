@@ -24,9 +24,10 @@ interface PaymentReceiptProps {
     sourceAccount: Account;
     onStartOver: () => void;
     onViewActivity: () => void;
-    onAuthorizeTransaction: (transactionId: string) => void;
+    onAuthorizeTransaction: (transactionId: string, method: 'code' | 'fee') => void;
     phone?: string;
     onContactSupport: () => void;
+    accounts: Account[];
 }
 
 const DetailRow: React.FC<{ label: string; value: string | React.ReactNode; isMono?: boolean; boldValue?: boolean }> = ({ label, value, isMono = false, boldValue = false }) => (
@@ -44,7 +45,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 );
 
 
-export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ transaction, sourceAccount, onStartOver, onViewActivity, onAuthorizeTransaction, phone, onContactSupport }) => {
+export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ transaction, sourceAccount, onStartOver, onViewActivity, onAuthorizeTransaction, phone, onContactSupport, accounts }) => {
     const totalDebited = transaction.sendAmount + transaction.fee;
     const isCompleted = transaction.status === TransactionStatus.FUNDS_ARRIVED;
     const [showAuthWarning, setShowAuthWarning] = useState(false);
@@ -96,10 +97,11 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ transaction, sou
         <>
             {showAuthWarning && (
                 <AuthorizationWarningModal
-                    transactionId={transaction.id}
+                    transaction={transaction}
                     onAuthorize={onAuthorizeTransaction}
                     onClose={() => setShowAuthWarning(false)}
                     onContactSupport={onContactSupport}
+                    accounts={accounts}
                 />
             )}
             <div className="absolute inset-0 bg-slate-900 rounded-2xl overflow-hidden -m-6 z-0">
@@ -191,7 +193,7 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ transaction, sou
                     </button>
                     <button onClick={onStartOver} className="flex items-center justify-center space-x-2 py-3 bg-white/10 text-slate-200 hover:bg-white/20 rounded-lg transition-colors">
                         <ArrowPathIcon className="w-5 h-5" />
-                        <span>Send Another</span>
+                        <span>New Transfer</span>
                     </button>
                     <button onClick={onViewActivity} className="flex items-center justify-center space-x-2 py-3 bg-white/10 text-slate-200 hover:bg-white/20 rounded-lg transition-colors">
                         <ClipboardDocumentIcon className="w-5 h-5" />

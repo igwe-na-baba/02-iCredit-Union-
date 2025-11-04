@@ -1,5 +1,5 @@
-import React from 'react';
-import { TrendingUpIcon, ArrowsRightLeftIcon } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { TrendingUpIcon, ArrowsRightLeftIcon, SpinnerIcon } from './Icons';
 import { EXCHANGE_RATES } from '../constants';
 
 const marketIndices = [
@@ -23,6 +23,22 @@ const IndexCard: React.FC<typeof marketIndices[0]> = ({ name, value, change, per
 export const Investments: React.FC = () => {
     const baseCurrency = 'USD';
     const rates = Object.entries(EXCHANGE_RATES).filter(([currency]) => currency !== baseCurrency);
+    const [refreshCountdown, setRefreshCountdown] = useState(30);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setRefreshCountdown(prev => {
+                if (prev <= 1) {
+                    // In a real app, you would re-fetch rates here.
+                    // For this demo, we just reset the timer.
+                    return 30;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
 
     return (
         <div className="space-y-8">
@@ -44,7 +60,13 @@ export const Investments: React.FC = () => {
                         <ArrowsRightLeftIcon className="w-6 h-6 text-primary" />
                         <span>Foreign Exchange Rates</span>
                     </h3>
-                    <p className="text-sm text-slate-400 mt-1">Live rates based on {baseCurrency}.</p>
+                    <div className="flex justify-between items-center">
+                        <p className="text-sm text-slate-400 mt-1">Live rates based on {baseCurrency}.</p>
+                        <div className="flex items-center space-x-2 text-xs text-slate-400">
+                            <SpinnerIcon className="w-4 h-4 animate-spin" />
+                            <span>Refreshes in {refreshCountdown}s</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Recipient, Transaction, Account, SecuritySettings, View, TransactionStatus, AccountType, UserProfile } from '../types';
 import { STANDARD_FEE, EXPRESS_FEE, EXCHANGE_RATES, TRANSFER_PURPOSES, USER_PIN, NETWORK_AUTH_CODE } from '../constants';
-import { SpinnerIcon, CheckCircleIcon, ExclamationTriangleIcon, KeypadIcon, FaceIdIcon, ShieldCheckIcon, CameraIcon, ClipboardDocumentIcon, XIcon, XCircleIcon, NetworkIcon, GlobeAltIcon, UsersIcon, getBankIcon, ArrowRightIcon, ScaleIcon } from './Icons';
+import { SpinnerIcon, CheckCircleIcon, ExclamationTriangleIcon, KeypadIcon, FaceIdIcon, ShieldCheckIcon, CameraIcon, ClipboardDocumentIcon, XIcon, XCircleIcon, NetworkIcon, GlobeAltIcon, UsersIcon, getBankIcon, ArrowRightIcon, ScaleIcon, SendIcon } from './Icons';
 import { triggerHaptic } from '../utils/haptics';
 import { PaymentReceipt } from './PaymentReceipt';
 import { CheckDepositFlow } from './CheckDepositFlow';
@@ -16,7 +16,7 @@ interface SendMoneyFlowProps {
   transactions: Transaction[];
   securitySettings: SecuritySettings;
   hapticsEnabled: boolean;
-  onAuthorizeTransaction: (transactionId: string) => void;
+  onAuthorizeTransaction: (transactionId: string, method: 'code' | 'fee') => void;
   setActiveView: (view: View) => void;
   onClose: () => void;
   onLinkAccount: () => void;
@@ -33,6 +33,12 @@ const securityCheckMessages = [
     'Running fraud analysis...',
     'Performing compliance screening...',
     'Finalizing secure transfer...'
+];
+
+const TABS = [
+    { id: 'send', label: 'Send', icon: <SendIcon className="w-5 h-5 mr-2" /> },
+    { id: 'split', label: 'Split', icon: <UsersIcon className="w-5 h-5 mr-2" /> },
+    { id: 'deposit', label: 'Deposit', icon: <CameraIcon className="w-5 h-5 mr-2" /> },
 ];
 
 
@@ -331,9 +337,10 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
         return (
              <div className="animate-fade-in-up">
                  <div className="flex border-b border-slate-200 mb-4">
-                     { (['send', 'split', 'deposit'] as const).map(tab => (
-                        <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-semibold capitalize transition-colors ${activeTab === tab ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}>
-                            {tab}
+                     { TABS.map(tab => (
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center px-4 py-2 text-sm font-semibold capitalize transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}>
+                           {tab.icon}
+                           {tab.label}
                         </button>
                      ))}
                  </div>
@@ -465,20 +472,24 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
             </div>
             
             <div className="p-4 bg-slate-200 rounded-lg shadow-digital-inset space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                    <span className="flex items-center text-slate-600"><ScaleIcon className="w-4 h-4 mr-1"/> Exchange rate</span>
-                    <span className="font-mono text-slate-800">1 USD ≈ {exchangeRate.toFixed(4)} {selectedRecipient?.country.currency}</span>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <span className="flex items-center text-sm text-slate-600"><ScaleIcon className="w-4 h-4 mr-1"/> Exchange rate (USD Base)</span>
+                        <span className="font-mono text-lg font-bold text-slate-800">1 USD ≈ {exchangeRate.toFixed(4)} {selectedRecipient?.country.currency}</span>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-sm text-slate-600">Rate locked for</span>
+                        <div className={`text-lg font-bold font-mono p-2 rounded-lg transition-colors ${rateLockCountdown < 10 ? 'text-red-500 bg-red-100' : 'text-slate-800 bg-slate-300/50'}`}>
+                            {Math.floor(rateLockCountdown / 60)}:{String(rateLockCountdown % 60).padStart(2, '0')}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex justify-between items-center text-lg font-bold border-t border-slate-300 pt-3 mt-2">
                     <span className="text-slate-800">Recipient gets</span>
                     <span className="font-mono text-primary">{receiveAmount.toLocaleString('en-US', { style: 'currency', currency: selectedRecipient?.country.currency })}</span>
                 </div>
             </div>
-
-             <div className="p-4 bg-slate-200/50 rounded-lg text-center">
-                 <p className="text-xs text-slate-500">Your exchange rate is locked for:</p>
-                 <p className={`text-xl font-bold font-mono ${rateLockCountdown < 10 ? 'text-red-500' : 'text-slate-800'}`}>{Math.floor(rateLockCountdown / 60)}:{String(rateLockCountdown % 60).padStart(2, '0')}</p>
-             </div>
+            
              <div className="mt-6 flex space-x-3">
                 <button onClick={handlePrevStep} className="w-full py-3 text-slate-700 bg-slate-200 rounded-lg font-semibold shadow-digital">Back</button>
                 <button onClick={handleNextStep} disabled={rateLockCountdown <= 0} className="w-full py-3 text-white bg-green-500 rounded-lg font-semibold shadow-md disabled:bg-green-300"> Confirm & Authorize </button>
@@ -516,10 +527,11 @@ export const SendMoneyFlow: React.FC<SendMoneyFlowProps> = ({ recipients, accoun
                 transaction={liveTransaction}
                 sourceAccount={sourceAccount}
                 onStartOver={handleStartOver}
-                onViewActivity={() => { onClose(); setActiveView('history'); }}
+                onViewActivity={handleViewActivity}
                 onAuthorizeTransaction={onAuthorizeTransaction}
                 phone={userProfile.phone}
                 onContactSupport={onContactSupport}
+                accounts={accounts}
             />
         );
       default: return null;
